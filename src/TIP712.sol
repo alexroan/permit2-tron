@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IEIP712} from "./interfaces/IEIP712.sol";
+import {ITIP712} from "./interfaces/ITIP712.sol";
 
-/// @notice EIP712 helpers for permit2
+/// @notice TIP712 helpers for permit2
 /// @dev Maintains cross-chain replay protection in the event of a fork
-/// @dev Reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/EIP712.sol
-contract EIP712 is IEIP712 {
+/// @dev Reference: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/TIP712.sol
+contract TIP712 is ITIP712 {
     // Cache the domain separator as an immutable value, but also store the chain id that it
     // corresponds to, in order to invalidate the cached domain separator if the chain id changes.
     bytes32 private immutable _CACHED_DOMAIN_SEPARATOR;
@@ -14,7 +14,7 @@ contract EIP712 is IEIP712 {
 
     bytes32 private constant _HASHED_NAME = keccak256("Permit2");
     bytes32 private constant _TYPE_HASH =
-        keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
+        keccak256("TIP712Domain(string name,uint256 chainId,address verifyingContract)");
 
     constructor() {
         // TIP-712: Use masked chainId

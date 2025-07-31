@@ -4,10 +4,10 @@ pragma solidity ^0.8.17;
 import {Test} from "forge-std/Test.sol";
 import {Permit2} from "../src/Permit2.sol";
 
-// forge test --match-contract EIP712
-contract EIP712Test is Test {
+// forge test --match-contract TIP712
+contract TIP712Test is Test {
     bytes32 private constant TYPE_HASH =
-        keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
+        keccak256("TIP712Domain(string name,uint256 chainId,address verifyingContract)");
     bytes32 private constant NAME_HASH = keccak256("Permit2");
 
     Permit2 permit2;

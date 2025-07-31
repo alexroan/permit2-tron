@@ -5,12 +5,12 @@ import {ERC20} from "solmate/src/tokens/ERC20.sol";
 import {SafeTransferLib} from "solmate/src/utils/SafeTransferLib.sol";
 import {PermitHash} from "./libraries/PermitHash.sol";
 import {SignatureVerification} from "./libraries/SignatureVerification.sol";
-import {EIP712} from "./EIP712.sol";
+import {TIP712} from "./TIP712.sol";
 import {IAllowanceTransfer} from "./interfaces/IAllowanceTransfer.sol";
 import {SignatureExpired, InvalidNonce} from "./PermitErrors.sol";
 import {Allowance} from "./libraries/Allowance.sol";
 
-contract AllowanceTransfer is IAllowanceTransfer, EIP712 {
+contract AllowanceTransfer is IAllowanceTransfer, TIP712 {
     using SignatureVerification for bytes;
     using SafeTransferLib for ERC20;
     using PermitHash for PermitSingle;
@@ -31,7 +31,9 @@ contract AllowanceTransfer is IAllowanceTransfer, EIP712 {
 
     /// @inheritdoc IAllowanceTransfer
     function permit(address owner, PermitSingle memory permitSingle, bytes calldata signature) external {
-        if (block.timestamp > permitSingle.sigDeadline) revert SignatureExpired(permitSingle.sigDeadline);
+        if (block.timestamp > permitSingle.sigDeadline) {
+            revert SignatureExpired(permitSingle.sigDeadline);
+        }
 
         // Verify the signer address from the signature.
         signature.verify(_hashTypedData(permitSingle.hash()), owner);
@@ -41,7 +43,9 @@ contract AllowanceTransfer is IAllowanceTransfer, EIP712 {
 
     /// @inheritdoc IAllowanceTransfer
     function permit(address owner, PermitBatch memory permitBatch, bytes calldata signature) external {
-        if (block.timestamp > permitBatch.sigDeadline) revert SignatureExpired(permitBatch.sigDeadline);
+        if (block.timestamp > permitBatch.sigDeadline) {
+            revert SignatureExpired(permitBatch.sigDeadline);
+        }
 
         // Verify the signer address from the signature.
         signature.verify(_hashTypedData(permitBatch.hash()), owner);
@@ -76,7 +80,9 @@ contract AllowanceTransfer is IAllowanceTransfer, EIP712 {
     function _transfer(address from, address to, uint160 amount, address token) private {
         PackedAllowance storage allowed = allowance[from][token][msg.sender];
 
-        if (block.timestamp > allowed.expiration) revert AllowanceExpired(allowed.expiration);
+        if (block.timestamp > allowed.expiration) {
+            revert AllowanceExpired(allowed.expiration);
+        }
 
         uint256 maxAmount = allowed.amount;
         if (maxAmount != type(uint160).max) {

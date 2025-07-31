@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {IEIP712} from "./IEIP712.sol";
+import {ITIP712} from "./ITIP712.sol";
 
 /// @title SignatureTransfer
 /// @notice Handles ERC20 token transfers through signature based actions
 /// @dev Requires user's token approval on the Permit2 contract
-interface ISignatureTransfer is IEIP712 {
+interface ISignatureTransfer is ITIP712 {
     /// @notice Thrown when the requested amount for a transfer is larger than the permissioned amount
     /// @param maxAmount The maximum amount a spender can request to transfer
     error InvalidAmount(uint256 maxAmount);
@@ -79,7 +79,7 @@ interface ISignatureTransfer is IEIP712 {
 
     /// @notice Transfers a token using a signed permit message
     /// @notice Includes extra data provided by the caller to verify signature over
-    /// @dev The witness type string must follow EIP712 ordering of nested structs and must include the TokenPermissions type definition
+    /// @dev The witness type string must follow TIP712 ordering of nested structs and must include the TokenPermissions type definition
     /// @dev Reverts if the requested amount is greater than the permitted signed amount
     /// @param permit The permit data signed over by the owner
     /// @param owner The owner of the tokens to transfer
@@ -109,7 +109,7 @@ interface ISignatureTransfer is IEIP712 {
     ) external;
 
     /// @notice Transfers multiple tokens using a signed permit message
-    /// @dev The witness type string must follow EIP712 ordering of nested structs and must include the TokenPermissions type definition
+    /// @dev The witness type string must follow TIP712 ordering of nested structs and must include the TokenPermissions type definition
     /// @notice Includes extra data provided by the caller to verify signature over
     /// @param permit The permit data signed over by the owner
     /// @param owner The owner of the tokens to transfer

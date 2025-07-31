@@ -7,9 +7,9 @@ import {ERC20} from "solmate/src/tokens/ERC20.sol";
 import {SafeTransferLib} from "solmate/src/utils/SafeTransferLib.sol";
 import {SignatureVerification} from "./libraries/SignatureVerification.sol";
 import {PermitHash} from "./libraries/PermitHash.sol";
-import {EIP712} from "./EIP712.sol";
+import {TIP712} from "./TIP712.sol";
 
-contract SignatureTransfer is ISignatureTransfer, EIP712 {
+contract SignatureTransfer is ISignatureTransfer, TIP712 {
     using SignatureVerification for bytes;
     using SafeTransferLib for ERC20;
     using PermitHash for PermitTransferFrom;
@@ -57,8 +57,12 @@ contract SignatureTransfer is ISignatureTransfer, EIP712 {
     ) private {
         uint256 requestedAmount = transferDetails.requestedAmount;
 
-        if (block.timestamp > permit.deadline) revert SignatureExpired(permit.deadline);
-        if (requestedAmount > permit.permitted.amount) revert InvalidAmount(permit.permitted.amount);
+        if (block.timestamp > permit.deadline) {
+            revert SignatureExpired(permit.deadline);
+        }
+        if (requestedAmount > permit.permitted.amount) {
+            revert InvalidAmount(permit.permitted.amount);
+        }
 
         _useUnorderedNonce(owner, permit.nonce);
 
@@ -105,7 +109,9 @@ contract SignatureTransfer is ISignatureTransfer, EIP712 {
     ) private {
         uint256 numPermitted = permit.permitted.length;
 
-        if (block.timestamp > permit.deadline) revert SignatureExpired(permit.deadline);
+        if (block.timestamp > permit.deadline) {
+            revert SignatureExpired(permit.deadline);
+        }
         if (numPermitted != transferDetails.length) revert LengthMismatch();
 
         _useUnorderedNonce(owner, permit.nonce);
@@ -116,7 +122,9 @@ contract SignatureTransfer is ISignatureTransfer, EIP712 {
                 TokenPermissions memory permitted = permit.permitted[i];
                 uint256 requestedAmount = transferDetails[i].requestedAmount;
 
-                if (requestedAmount > permitted.amount) revert InvalidAmount(permitted.amount);
+                if (requestedAmount > permitted.amount) {
+                    revert InvalidAmount(permitted.amount);
+                }
 
                 if (requestedAmount != 0) {
                     // allow spender to specify which of the permitted tokens should be transferred

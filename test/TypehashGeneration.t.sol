@@ -64,7 +64,7 @@ contract TypehashGeneration is Test, PermitSignature {
 
     function _buildDomainSeparator() private view returns (bytes32) {
         bytes32 nameHash = keccak256("Permit2");
-        bytes32 typeHash = keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
+        bytes32 typeHash = keccak256("TIP712Domain(string name,uint256 chainId,address verifyingContract)");
         return keccak256(abi.encode(typeHash, nameHash, chainId, verifyingContract));
     }
 

@@ -10,7 +10,7 @@ TIP-712 requires two main modifications from standard EIP-712:
 
 ## Important Note
 
-The Solidity pragma versions remain unchanged at `0.8.17` (or `^0.8.17` for libraries). Only the TIP-712 specific changes have been applied.
+The Solidity pragma versions have changed from 0.8.17 to 0.8.18.
 
 ## Changes Made
 

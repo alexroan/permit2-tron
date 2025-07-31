@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.18;
 
 import {ISignatureTransfer} from "./interfaces/ISignatureTransfer.sol";
 import {SignatureExpired, InvalidNonce} from "./PermitErrors.sol";
@@ -25,7 +25,13 @@ contract SignatureTransfer is ISignatureTransfer, TIP712 {
         address owner,
         bytes calldata signature
     ) external {
-        _permitTransferFrom(permit, transferDetails, owner, permit.hash(), signature);
+        _permitTransferFrom(
+            permit,
+            transferDetails,
+            owner,
+            permit.hash(),
+            signature
+        );
     }
 
     /// @inheritdoc ISignatureTransfer
@@ -38,7 +44,11 @@ contract SignatureTransfer is ISignatureTransfer, TIP712 {
         bytes calldata signature
     ) external {
         _permitTransferFrom(
-            permit, transferDetails, owner, permit.hashWithWitness(witness, witnessTypeString), signature
+            permit,
+            transferDetails,
+            owner,
+            permit.hashWithWitness(witness, witnessTypeString),
+            signature
         );
     }
 
@@ -68,7 +78,11 @@ contract SignatureTransfer is ISignatureTransfer, TIP712 {
 
         signature.verify(_hashTypedData(dataHash), owner);
 
-        ERC20(permit.permitted.token).safeTransferFrom(owner, transferDetails.to, requestedAmount);
+        ERC20(permit.permitted.token).safeTransferFrom(
+            owner,
+            transferDetails.to,
+            requestedAmount
+        );
     }
 
     /// @inheritdoc ISignatureTransfer
@@ -78,7 +92,13 @@ contract SignatureTransfer is ISignatureTransfer, TIP712 {
         address owner,
         bytes calldata signature
     ) external {
-        _permitTransferFrom(permit, transferDetails, owner, permit.hash(), signature);
+        _permitTransferFrom(
+            permit,
+            transferDetails,
+            owner,
+            permit.hash(),
+            signature
+        );
     }
 
     /// @inheritdoc ISignatureTransfer
@@ -91,7 +111,11 @@ contract SignatureTransfer is ISignatureTransfer, TIP712 {
         bytes calldata signature
     ) external {
         _permitTransferFrom(
-            permit, transferDetails, owner, permit.hashWithWitness(witness, witnessTypeString), signature
+            permit,
+            transferDetails,
+            owner,
+            permit.hashWithWitness(witness, witnessTypeString),
+            signature
         );
     }
 
@@ -128,7 +152,11 @@ contract SignatureTransfer is ISignatureTransfer, TIP712 {
 
                 if (requestedAmount != 0) {
                     // allow spender to specify which of the permitted tokens should be transferred
-                    ERC20(permitted.token).safeTransferFrom(owner, transferDetails[i].to, requestedAmount);
+                    ERC20(permitted.token).safeTransferFrom(
+                        owner,
+                        transferDetails[i].to,
+                        requestedAmount
+                    );
                 }
             }
         }
@@ -147,7 +175,9 @@ contract SignatureTransfer is ISignatureTransfer, TIP712 {
     /// @return bitPos The bit position
     /// @dev The first 248 bits of the nonce value is the index of the desired bitmap
     /// @dev The last 8 bits of the nonce value is the position of the bit in the bitmap
-    function bitmapPositions(uint256 nonce) private pure returns (uint256 wordPos, uint256 bitPos) {
+    function bitmapPositions(
+        uint256 nonce
+    ) private pure returns (uint256 wordPos, uint256 bitPos) {
         wordPos = uint248(nonce >> 8);
         bitPos = uint8(nonce);
     }

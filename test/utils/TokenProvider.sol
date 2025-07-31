@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.18;
 
 import {Vm} from "forge-std/Test.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
@@ -32,7 +32,11 @@ contract TokenProvider {
         token1.mint(from, MINT_AMOUNT_ERC20);
     }
 
-    function setERC20TestTokenApprovals(Vm vm, address owner, address spender) public {
+    function setERC20TestTokenApprovals(
+        Vm vm,
+        address owner,
+        address spender
+    ) public {
         vm.startPrank(owner);
         token0.approve(spender, type(uint256).max);
         token1.approve(spender, type(uint256).max);
@@ -58,7 +62,11 @@ contract TokenProvider {
         nft4.mint(from, 2, MINT_AMOUNT_ERC1155);
     }
 
-    function setNFTTestTokenApprovals(Vm vm, address owner, address spender) public {
+    function setNFTTestTokenApprovals(
+        Vm vm,
+        address owner,
+        address spender
+    ) public {
         vm.startPrank(owner);
         nft1.approve(spender, 1);
         nft2.approve(spender, 2);

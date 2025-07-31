@@ -1,4 +1,4 @@
-pragma solidity 0.8.17;
+pragma solidity 0.8.18;
 
 import {Vm} from "forge-std/Vm.sol";
 import {Permit2} from "../../src/Permit2.sol";
@@ -10,7 +10,8 @@ contract Permitter is PermitSignature {
     uint256 private immutable privateKey;
     Permit2 private immutable permit2;
     MockERC20 private immutable token;
-    Vm private constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+    Vm private constant vm =
+        Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
     address public immutable signer;
 
@@ -28,9 +29,15 @@ contract Permitter is PermitSignature {
         token.approve(address(permit2), type(uint256).max);
     }
 
-    function createPermit(uint128 amount, address spender)
+    function createPermit(
+        uint128 amount,
+        address spender
+    )
         public
-        returns (IAllowanceTransfer.PermitSingle memory permit, bytes memory sig)
+        returns (
+            IAllowanceTransfer.PermitSingle memory permit,
+            bytes memory sig
+        )
     {
         uint48 nonce = nonces[spender];
         permit = IAllowanceTransfer.PermitSingle({
@@ -43,14 +50,23 @@ contract Permitter is PermitSignature {
             spender: spender,
             sigDeadline: block.timestamp + 1000
         });
-        sig = getPermitSignature(permit, privateKey, permit2.DOMAIN_SEPARATOR());
+        sig = getPermitSignature(
+            permit,
+            privateKey,
+            permit2.DOMAIN_SEPARATOR()
+        );
 
         nonces[spender]++;
         amountPermitted += amount;
     }
 
     function approve(uint128 amount, address spender) public {
-        permit2.approve(address(token), spender, uint160(amount), uint48(block.timestamp + 1000));
+        permit2.approve(
+            address(token),
+            spender,
+            uint160(amount),
+            uint48(block.timestamp + 1000)
+        );
         amountPermitted += amount;
     }
 }

@@ -1,4 +1,4 @@
-pragma solidity 0.8.17;
+pragma solidity 0.8.18;
 
 import {Test} from "forge-std/Test.sol";
 import {StdInvariant} from "forge-std/StdInvariant.sol";
@@ -33,17 +33,27 @@ contract Runner {
         spender2 = new Spender(_permit2, token);
     }
 
-    function createPermit(uint128 amount, bool firstPermitter, bool firstSpender) public {
+    function createPermit(
+        uint128 amount,
+        bool firstPermitter,
+        bool firstSpender
+    ) public {
         Permitter permitter = firstPermitter ? permitter1 : permitter2;
         Spender spender = firstSpender ? spender1 : spender2;
-        (IAllowanceTransfer.PermitSingle memory permit, bytes memory sig) =
-            permitter.createPermit(amount, address(spender));
+        (
+            IAllowanceTransfer.PermitSingle memory permit,
+            bytes memory sig
+        ) = permitter.createPermit(amount, address(spender));
         permits.push(permit);
         sigs.push(sig);
         owners.push(address(permitter.signer()));
     }
 
-    function approve(uint128 amount, bool firstPermitter, bool firstSpender) public {
+    function approve(
+        uint128 amount,
+        bool firstPermitter,
+        bool firstSpender
+    ) public {
         Permitter permitter = firstPermitter ? permitter1 : permitter2;
         Spender spender = firstSpender ? spender1 : spender2;
         permitter.approve(amount, address(spender));
@@ -58,7 +68,11 @@ contract Runner {
         index++;
     }
 
-    function spendPermit(uint160 amount, bool firstPermitter, bool firstSpender) public {
+    function spendPermit(
+        uint160 amount,
+        bool firstPermitter,
+        bool firstSpender
+    ) public {
         Permitter permitter = firstPermitter ? permitter1 : permitter2;
         Spender spender = firstSpender ? spender1 : spender2;
         spender.spendPermit(amount, address(permitter.signer()));
@@ -98,7 +112,11 @@ contract AllowanceTransferInvariants is StdInvariant, Test {
 
     function invariant_balanceEqualsSpent() public {
         uint256 spent = runner.amountSpent();
-        assertEq(runner.balanceOf(address(runner.spender1())) + runner.balanceOf(address(runner.spender2())), spent);
+        assertEq(
+            runner.balanceOf(address(runner.spender1())) +
+                runner.balanceOf(address(runner.spender2())),
+            spent
+        );
     }
 
     function invariant_permit2NeverHoldsBalance() public {

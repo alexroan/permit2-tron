@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.18;
 
 import {Test} from "forge-std/Test.sol";
 import {SafeERC20, IERC20, IERC20Permit} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -90,12 +90,19 @@ contract NonceBitmapTest is Test {
         }
     }
 
-    function testInvalidateNoncesRandomly(uint248 wordPos, uint256 mask) public {
+    function testInvalidateNoncesRandomly(
+        uint248 wordPos,
+        uint256 mask
+    ) public {
         permit2.invalidateUnorderedNonces(wordPos, mask);
         assertEq(mask, permit2.nonceBitmap(address(this), wordPos));
     }
 
-    function testInvalidateTwoNoncesRandomly(uint248 wordPos, uint256 startBitmap, uint256 mask) public {
+    function testInvalidateTwoNoncesRandomly(
+        uint248 wordPos,
+        uint256 startBitmap,
+        uint256 mask
+    ) public {
         permit2.invalidateUnorderedNonces(wordPos, startBitmap);
         assertEq(startBitmap, permit2.nonceBitmap(address(this), wordPos));
 

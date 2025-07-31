@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.18;
 
 import {Test} from "forge-std/Test.sol";
 import {IERC1271} from "../../src/interfaces/IERC1271.sol";
@@ -15,15 +15,22 @@ interface GnosisSafeProxy is IERC1271 {
         uint256 payment,
         address payable paymentReceiver
     ) external;
+
     function domainSeparator() external view returns (bytes32);
 }
 
 interface GnosisSafeProxyFactory {
-    function createProxy(address singleton, bytes memory data) external returns (GnosisSafeProxy proxy);
+    function createProxy(
+        address singleton,
+        bytes memory data
+    ) external returns (GnosisSafeProxy proxy);
 }
 
 contract SampleCaller {
-    function checkIsValidSignature(IERC1271 target, bytes32 hash) external view returns (bytes4) {
+    function checkIsValidSignature(
+        IERC1271 target,
+        bytes32 hash
+    ) external view returns (bytes4) {
         return target.isValidSignature(hash, "");
     }
 }
@@ -41,9 +48,11 @@ contract GnosisSafeTest is Test {
         sampleCaller = new SampleCaller();
     }
 
-    GnosisSafeProxyFactory gnosisSafeProxyFactory = GnosisSafeProxyFactory(0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2);
+    GnosisSafeProxyFactory gnosisSafeProxyFactory =
+        GnosisSafeProxyFactory(0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2);
     address singleton = 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552;
-    address compatibilityFallbackHandler = 0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4;
+    address compatibilityFallbackHandler =
+        0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4;
 
     function testSignMessage() public {
         // deploy a safe
@@ -53,7 +62,16 @@ contract GnosisSafeTest is Test {
             singleton,
             abi.encodeCall(
                 GnosisSafeProxy.setup,
-                (owners, 1, address(0), "", compatibilityFallbackHandler, address(0), 0, payable(address(0)))
+                (
+                    owners,
+                    1,
+                    address(0),
+                    "",
+                    compatibilityFallbackHandler,
+                    address(0),
+                    0,
+                    payable(address(0))
+                )
             )
         );
 
@@ -61,9 +79,17 @@ contract GnosisSafeTest is Test {
 
         // manually calculate the output of SignMessageLib#getMessageHash to avoid delegatecall issues
         bytes32 SAFE_MSG_TYPEHASH = keccak256("SafeMessage(bytes message)");
-        bytes32 safeMessageHash = keccak256(abi.encode(SAFE_MSG_TYPEHASH, keccak256(abi.encode(dataHash))));
-        bytes32 messageHash =
-            keccak256(abi.encodePacked(bytes1(0x19), bytes1(0x01), safe.domainSeparator(), safeMessageHash));
+        bytes32 safeMessageHash = keccak256(
+            abi.encode(SAFE_MSG_TYPEHASH, keccak256(abi.encode(dataHash)))
+        );
+        bytes32 messageHash = keccak256(
+            abi.encodePacked(
+                bytes1(0x19),
+                bytes1(0x01),
+                safe.domainSeparator(),
+                safeMessageHash
+            )
+        );
 
         // ensure revert
         vm.expectRevert("Hash not approved");
@@ -71,7 +97,9 @@ contract GnosisSafeTest is Test {
 
         // manually set signedMessages[dataHash] to 1
         uint256 SIGNED_MESSAGES_MAPPING_STORAGE_SLOT = 7;
-        bytes32 expectedSlot = keccak256(abi.encode(messageHash, SIGNED_MESSAGES_MAPPING_STORAGE_SLOT));
+        bytes32 expectedSlot = keccak256(
+            abi.encode(messageHash, SIGNED_MESSAGES_MAPPING_STORAGE_SLOT)
+        );
         assertEq(vm.load(address(safe), expectedSlot), bytes32(0));
         vm.store(address(safe), expectedSlot, bytes32(uint256(1)));
 

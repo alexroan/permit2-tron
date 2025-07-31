@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.18;
 
 import {Test} from "forge-std/Test.sol";
 import {Permit2} from "../src/Permit2.sol";
@@ -7,7 +7,9 @@ import {Permit2} from "../src/Permit2.sol";
 // forge test --match-contract TIP712
 contract TIP712Test is Test {
     bytes32 private constant TYPE_HASH =
-        keccak256("TIP712Domain(string name,uint256 chainId,address verifyingContract)");
+        keccak256(
+            "TIP712Domain(string name,uint256 chainId,address verifyingContract)"
+        );
     bytes32 private constant NAME_HASH = keccak256("Permit2");
 
     Permit2 permit2;
@@ -17,7 +19,9 @@ contract TIP712Test is Test {
     }
 
     function testDomainSeparator() public {
-        bytes32 expectedDomainSeparator = keccak256(abi.encode(TYPE_HASH, NAME_HASH, block.chainid, address(permit2)));
+        bytes32 expectedDomainSeparator = keccak256(
+            abi.encode(TYPE_HASH, NAME_HASH, block.chainid, address(permit2))
+        );
 
         assertEq(permit2.DOMAIN_SEPARATOR(), expectedDomainSeparator);
     }
@@ -28,7 +32,9 @@ contract TIP712Test is Test {
         vm.chainId(newChainId);
         assertTrue(permit2.DOMAIN_SEPARATOR() != beginningSeparator);
 
-        bytes32 expectedDomainSeparator = keccak256(abi.encode(TYPE_HASH, NAME_HASH, newChainId, address(permit2)));
+        bytes32 expectedDomainSeparator = keccak256(
+            abi.encode(TYPE_HASH, NAME_HASH, newChainId, address(permit2))
+        );
         assertEq(permit2.DOMAIN_SEPARATOR(), expectedDomainSeparator);
     }
 }

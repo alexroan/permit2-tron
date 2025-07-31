@@ -17,21 +17,25 @@ contract EIP712 is IEIP712 {
         keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)");
 
     constructor() {
-        _CACHED_CHAIN_ID = block.chainid;
+        // TIP-712: Use masked chainId
+        _CACHED_CHAIN_ID = block.chainid & 0xffffffff;
         _CACHED_DOMAIN_SEPARATOR = _buildDomainSeparator(_TYPE_HASH, _HASHED_NAME);
     }
 
     /// @notice Returns the domain separator for the current chain.
     /// @dev Uses cached version if chainid and address are unchanged from construction.
     function DOMAIN_SEPARATOR() public view override returns (bytes32) {
-        return block.chainid == _CACHED_CHAIN_ID
+        // TIP-712: Compare masked chainIds
+        return (block.chainid & 0xffffffff) == _CACHED_CHAIN_ID
             ? _CACHED_DOMAIN_SEPARATOR
             : _buildDomainSeparator(_TYPE_HASH, _HASHED_NAME);
     }
 
     /// @notice Builds a domain separator using the current chainId and contract address.
     function _buildDomainSeparator(bytes32 typeHash, bytes32 nameHash) private view returns (bytes32) {
-        return keccak256(abi.encode(typeHash, nameHash, block.chainid, address(this)));
+        // TIP-712: Use masked chainId and encode address as uint160
+        uint256 chainId = block.chainid & 0xffffffff;
+        return keccak256(abi.encode(typeHash, nameHash, chainId, uint160(address(this))));
     }
 
     /// @notice Creates an EIP-712 typed data hash

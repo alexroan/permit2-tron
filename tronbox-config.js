@@ -39,7 +39,7 @@ module.exports = {
       privateKey: '0000000000000000000000000000000000000000000000000000000000000001',
       userFeePercentage: 0,
       feeLimit: 1000 * 1e6,
-      fullHost: 'http://127.0.0.1:9090',
+      fullHost: 'http://127.0.0.1:9095',
       network_id: '9'
     }
   },
@@ -54,6 +54,9 @@ module.exports = {
           runs: 1000000
         },
         viaIR: true,
+        metadata: {
+          bytecodeHash: 'none'
+        }
       }
     }
   }

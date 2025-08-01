@@ -7,9 +7,9 @@ import {ERC20} from "solmate/src/tokens/ERC20.sol";
 import {SafeTransferLib} from "solmate/src/utils/SafeTransferLib.sol";
 import {SignatureVerification} from "./libraries/SignatureVerification.sol";
 import {PermitHash} from "./libraries/PermitHash.sol";
-import {EIP712} from "./EIP712.sol";
+import {TIP712} from "./TIP712.sol";
 
-contract SignatureTransfer is ISignatureTransfer, EIP712 {
+contract SignatureTransfer is ISignatureTransfer, TIP712 {
     using SignatureVerification for bytes;
     using SafeTransferLib for ERC20;
     using PermitHash for PermitTransferFrom;

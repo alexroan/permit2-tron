@@ -1,13 +1,42 @@
 {
-	"scripts": {
-		"build": "tronbox compile",
-		"test": "tronbox test",
-		"migrate": "tronbox migrate"
-	},
-	"version": "1.0.0",
-	"description": "Permit2 implementation for Tron",	
-	"dependencies": {
-		"solmate": "^6.8.0",
-		"tronbox": "^4.2.2"
-	}
+  "name": "permit2-tron",
+  "version": "1.0.0",
+  "description": "Permit2 implementation for Tron - Next-generation token approval/meta-tx system",
+  "main": "index.js",
+  "scripts": {
+    "build": "tronbox compile",
+    "test": "tronbox test",
+    "migrate": "tronbox migrate",
+    "migrate:shasta": "source .env && tronbox migrate --network shasta",
+    "migrate:nile": "source .env && tronbox migrate --network nile",
+    "migrate:mainnet": "source .env && tronbox migrate --network mainnet",
+    "clean": "rm -rf build"
+  },
+  "keywords": [
+    "permit2",
+    "tron",
+    "trc20",
+    "tip-712",
+    "signatures",
+    "meta-transactions",
+    "token-approvals"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "solmate": "^6.8.0",
+    "tronbox": "^4.2.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": {
+    "url": ""
+  },
+  "homepage": ""
 }

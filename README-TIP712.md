@@ -16,17 +16,17 @@ TRON's TIP-712 differs from Ethereum's EIP-712 in several ways:
 
 ### 3. Compilation
 ```bash
-pnpm tronbox compile
+pnpm build
 ```
 
 ### 4. Migration
 ```bash
-pnpm tronbox migrate --network development
+pnpm migrate
 ```
 
 ### 5. Testing
 ```bash
-pnpm tronbox test
+pnpm test
 ```
 
 ## Test Coverage

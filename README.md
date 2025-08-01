@@ -175,7 +175,23 @@ await permit2.permitTransferFrom(
 
 ## Contract Addresses
 
-Deployed addresses will be displayed after migration. Check the migration output or build files for specific deployment addresses.
+### Testnet Deployments
+
+> ⚠️ **WARNING**: These contracts are for testing purposes only and are NOT ready for production use.
+
+| Network | Address | Status |
+|---------|---------|--------|
+| Nile Testnet | `TGm3CvZSaRvi7iehvZj7utaKLcP6JwpynF` | 🧪 Experimental |
+
+**Important Notes:**
+- This is the first testnet deployment of Permit2 on Tron
+- The contract is under active development and testing
+- Do NOT use for production applications or real value transfers
+- Contract may be redeployed with breaking changes
+
+### Mainnet Deployment
+
+No mainnet deployment yet. Thorough testing on testnet is required before mainnet deployment.
 
 ## Security Considerations
 

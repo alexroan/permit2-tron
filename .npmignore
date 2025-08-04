@@ -1,0 +1,11 @@
+# Sensitive files
+.env
+.env.*
+
+# Development artifacts
+node_modules/
+.git/
+.DS_Store
+
+# Local environment example (contains private key placeholders)
+sample-env

@@ -1,8 +1,7 @@
 {
-  "name": "permit2-tron",
-  "version": "1.0.0",
+  "name": "@alexroan/permit2-tron",
+  "version": "0.0.1",
   "description": "Permit2 implementation for Tron - Next-generation token approval/meta-tx system",
-  "main": "index.js",
   "scripts": {
     "build": "tronbox compile",
     "test": "tronbox test",
@@ -21,10 +20,12 @@
     "meta-transactions",
     "token-approvals"
   ],
-  "author": "",
+  "author": "alexroan",
   "license": "MIT",
   "dependencies": {
-    "solmate": "^6.8.0",
+    "solmate": "^6.8.0"
+  },
+  "devDependencies": {
     "tronbox": "^4.2.2",
     "tronweb": "^6.0.4"
   },
@@ -33,10 +34,8 @@
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/alexroan/permit2-tron"
   },
-  "bugs": {
-    "url": ""
-  },
-  "homepage": ""
+  "bugs": "https://github.com/alexroan/permit2-tron/issues",
+  "homepage": "https://github.com/alexroan/permit2-tron"
 }

@@ -194,7 +194,7 @@ contract('Permit2 - TIP-712 Compliant', () => {
     return balances;
   }
 
-  it.skip('should verify hashTokenPermissions helper matches contract', async () => {
+  it('should verify hashTokenPermissions helper matches contract', async () => {
     // Deploy contracts using helper
     await deployContracts();
     
@@ -227,7 +227,7 @@ contract('Permit2 - TIP-712 Compliant', () => {
     console.log('✅ hashTokenPermissions helper matches contract implementation');
   });
   
-  it.skip('should verify hashWithWitness helper matches contract', async () => {
+  it('should verify hashWithWitness helper matches contract', async () => {
     // Deploy contracts using helper
     await deployContracts();
     
@@ -293,7 +293,7 @@ contract('Permit2 - TIP-712 Compliant', () => {
     console.log('✅ hashWithWitness helper matches contract implementation');
   });
   
-  it.skip('should verify hashTypedData helper matches contract', async () => {
+  it('should verify hashTypedData helper matches contract', async () => {
     // Deploy contracts using helper
     await deployContracts();
     
@@ -326,7 +326,7 @@ contract('Permit2 - TIP-712 Compliant', () => {
     console.log('✅ hashTypedData helper matches contract implementation');
   });
   
-  it.skip('should verify signature verification helper matches contract', async () => {
+  it('should verify signature verification helper matches contract', async () => {
     // Deploy contracts using helper
     await deployContracts();
     
@@ -426,7 +426,7 @@ contract('Permit2 - TIP-712 Compliant', () => {
     console.log('✅ Signature verification helper implementation complete');
   });
   
-  it.skip('should successfully execute permitTransferFrom with TIP-712 signature', async () => {
+  it('should successfully execute permitTransferFrom with TIP-712 signature', async () => {
     // Deploy contracts
     await deployContracts();
     
@@ -634,7 +634,7 @@ contract('Permit2 - TIP-712 Compliant', () => {
     }
   });
   
-  it.skip('should allow transfer to a different recipient', async () => {
+  it('should allow transfer to a different recipient', async () => {
     console.log('\n=== Test: Transfer to Different Recipient ===');
     
     // This test shows that the spender can transfer to any recipient
@@ -707,7 +707,7 @@ contract('Permit2 - TIP-712 Compliant', () => {
     );
   });
   
-  it.skip('should fail with expired deadline', async () => {
+  it('should fail with expired deadline', async () => {
     console.log('\n=== Test: Expired Deadline ===');
     
     const nonce = Math.floor(Math.random() * 10000);

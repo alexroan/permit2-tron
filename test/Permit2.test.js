@@ -1,115 +1,5 @@
 const testHelpers = require('./test-helpers');
-
-// Helper functions that mimic on-chain library functions
-const hashHelpers = {
-  // Mimics PermitHash._hashTokenPermissions
-  hashTokenPermissions: (tronWeb, token, amount, typeHash = null) => {
-    // TOKEN_PERMISSIONS_TYPEHASH = keccak256("TokenPermissions(address token,uint256 amount)")
-    const TOKEN_PERMISSIONS_TYPEHASH = typeHash || ('0x' + tronWeb.sha3('TokenPermissions(address token,uint256 amount)', false));
-    
-    // Convert token address to hex if needed
-    const tokenHex = token.startsWith('0x') ? token : tronWeb.address.toHex(token);
-    
-    // Convert address to uint160 by removing the 41 prefix and converting to BigInt
-    const tokenWithout41 = '0x' + tokenHex.slice(2);
-    const tokenBigInt = BigInt(tokenWithout41).toString();
-    
-    // Encode: typehash, token as uint160, amount
-    const encoded = tronWeb.utils.abi.encodeParams(
-      ['bytes32', 'uint160', 'uint256'],
-      [TOKEN_PERMISSIONS_TYPEHASH, tokenBigInt, amount]
-    );
-    
-    // Return keccak256 hash using ethersUtils (TronWeb.sha3 has issues with 0x prefix)
-    return tronWeb.utils.ethersUtils.keccak256(encoded);
-  },
-  
-  // Mimics PermitHash.hashWithWitness
-  hashWithWitness: (tronWeb, permit, witness, witnessTypeString, msgSender) => {
-    // Calculate the permit type hash
-    const PERMIT_TRANSFER_FROM_WITNESS_TYPEHASH_STUB = 
-      "PermitWitnessTransferFrom(TokenPermissions permitted,address spender,uint256 nonce,uint256 deadline,";
-    const typeHash = tronWeb.utils.ethersUtils.keccak256(
-      tronWeb.utils.ethersUtils.toUtf8Bytes(PERMIT_TRANSFER_FROM_WITNESS_TYPEHASH_STUB + witnessTypeString)
-    );
-    
-    // Calculate token permissions hash
-    const tokenPermissionsHash = hashHelpers.hashTokenPermissions(
-      tronWeb,
-      permit.permitted.token,
-      permit.permitted.amount
-    );
-    
-    // Convert msg.sender to uint160
-    const msgSenderHex = msgSender.startsWith('0x') ? msgSender : tronWeb.address.toHex(msgSender);
-    const msgSenderWithout41 = '0x' + msgSenderHex.slice(2);
-    const msgSenderBigInt = BigInt(msgSenderWithout41).toString();
-    
-    // Encode the permit data
-    const encoded = tronWeb.utils.abi.encodeParams(
-      ['bytes32', 'bytes32', 'uint160', 'uint256', 'uint256', 'bytes32'],
-      [typeHash, tokenPermissionsHash, msgSenderBigInt, permit.nonce, permit.deadline, witness]
-    );
-    
-    // Return keccak256 hash
-    return tronWeb.utils.ethersUtils.keccak256(encoded);
-  },
-  
-  // Mimics TIP712._hashTypedData
-  hashTypedData: (tronWeb, domainSeparator, structHash) => {
-    // Encode according to EIP-712/TIP-712 standard
-    // "\x19\x01" + domainSeparator + structHash
-    const encoded = '0x1901' + domainSeparator.slice(2) + structHash.slice(2);
-    
-    // Return keccak256 hash
-    return tronWeb.utils.ethersUtils.keccak256(encoded);
-  },
-  
-  // Mimics SignatureVerification.verify
-  verify: (tronWeb, signature, hash, claimedSigner) => {
-    // Handle both 65-byte and 64-byte (EIP-2098) signatures
-    let r, s, v;
-    
-    if (signature.length === 132) { // 65 bytes * 2 + 0x prefix
-      // Standard 65-byte signature
-      r = '0x' + signature.slice(2, 66);
-      s = '0x' + signature.slice(66, 130);
-      v = parseInt(signature.slice(130, 132), 16);
-    } else if (signature.length === 130) { // 64 bytes * 2 + 0x prefix
-      // EIP-2098 compact signature
-      r = '0x' + signature.slice(2, 66);
-      const vs = '0x' + signature.slice(66, 130);
-      // Extract s by masking the highest bit
-      const vsBigInt = BigInt(vs);
-      const UPPER_BIT_MASK = BigInt('0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-      s = '0x' + (vsBigInt & UPPER_BIT_MASK).toString(16).padStart(64, '0');
-      // Extract v from the highest bit
-      v = Number(vsBigInt >> BigInt(255)) + 27;
-    } else {
-      throw new Error('InvalidSignatureLength');
-    }
-    
-    // Recover the signer using ethersUtils
-    const recoveredAddress = tronWeb.utils.ethersUtils.recoverAddress(hash, { r, s, v });
-    
-    if (!recoveredAddress) {
-      throw new Error('InvalidSignature');
-    }
-    
-    // Convert both addresses to hex for comparison
-    // ethersUtils returns Ethereum-style address (0x prefix, no 41), so we need to convert
-    const recoveredHex = '41' + recoveredAddress.slice(2).toLowerCase();
-    const claimedHex = tronWeb.address.toHex(claimedSigner).toLowerCase();
-    
-    console.log('Debug verify - recovered:', recoveredHex, 'claimed:', claimedHex);
-    
-    if (recoveredHex.toLowerCase() !== claimedHex.toLowerCase()) {
-      throw new Error(`InvalidSigner: claimed ${claimedHex}, recovered ${recoveredHex}`);
-    }
-    
-    return true;
-  }
-};
+const hashHelpers = require('../helpers/hash-helpers');
 
 contract('Permit2 - TIP-712 Compliant', () => {
   let permit2, permit2_2;
@@ -118,7 +8,7 @@ contract('Permit2 - TIP-712 Compliant', () => {
   let owner, secondAccount, thirdAccount;
   let ownerPrivateKey;
   let TronWeb;
-  let chainId = 3360022319; // Local testnet chainId
+  let chainId = (3360022319 & 0xffffffff) >>> 0; // Local testnet chainId masked for TIP-712
   
   const TOKEN_AMOUNT = '100000000000000000000'; // 100 tokens
   const TRANSFER_AMOUNT = '10000000000000000000'; // 10 tokens
@@ -895,4 +785,5 @@ contract('Permit2 - TIP-712 Compliant', () => {
     
     console.log('✅ permitWitnessTransferFrom executed successfully with witness data!');
   });
+
 }); 

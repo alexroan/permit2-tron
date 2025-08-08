@@ -1,10 +1,39 @@
 const testHelpers = require('./test-helpers');
 
+// Helper functions that mimic on-chain library functions
+const hashHelpers = {
+  // Mimics PermitHash._hashTokenPermissions
+  hashTokenPermissions: (tronWeb, token, amount, typeHash = null) => {
+    // TOKEN_PERMISSIONS_TYPEHASH = keccak256("TokenPermissions(address token,uint256 amount)")
+    const TOKEN_PERMISSIONS_TYPEHASH = typeHash || ('0x' + tronWeb.sha3('TokenPermissions(address token,uint256 amount)', false));
+    
+    // Convert token address to hex if needed
+    const tokenHex = token.startsWith('0x') ? token : tronWeb.address.toHex(token);
+    
+    // Convert address to uint160 by removing the 41 prefix and converting to BigInt
+    const tokenWithout41 = '0x' + tokenHex.slice(2);
+    const tokenBigInt = BigInt(tokenWithout41).toString();
+    
+    // Encode: typehash, token as uint160, amount
+    const encoded = tronWeb.utils.abi.encodeParams(
+      ['bytes32', 'uint160', 'uint256'],
+      [TOKEN_PERMISSIONS_TYPEHASH, tokenBigInt, amount]
+    );
+    
+    // Return keccak256 hash using ethersUtils (TronWeb.sha3 has issues with 0x prefix)
+    return tronWeb.utils.ethersUtils.keccak256(encoded);
+  }
+};
+
 contract('Permit2 - TIP-712 Compliant', () => {
   let permit2, permit2_2;
   let mockERC20;
-  let owner, secondAccount;
+  let testHashing;
+  let owner, secondAccount, thirdAccount;
   let ownerPrivateKey;
+  let TronWeb;
+  let chainId = 3360022319; // Local testnet chainId
+  
   const TOKEN_AMOUNT = '100000000000000000000'; // 100 tokens
   const TRANSFER_AMOUNT = '10000000000000000000'; // 10 tokens
 
@@ -13,55 +42,129 @@ contract('Permit2 - TIP-712 Compliant', () => {
     
     owner = testHelpers.accounts.owner.address;
     secondAccount = testHelpers.accounts.second.address;
+    thirdAccount = testHelpers.accounts.third.address;
     ownerPrivateKey = testHelpers.accounts.owner.privateKey;
+    TronWeb = testHelpers.ownerWeb().constructor;
     
     console.log('=== Test Accounts ===');
     console.log('Owner:', owner);
     console.log('Second:', secondAccount);
+    console.log('Third:', thirdAccount);
   });
-
-  it('should successfully execute permitTransferFrom with TIP-712 signature', async () => {
-    // Load contract artifacts
+  
+  // Helper to deploy common contracts
+  async function deployContracts() {
     const Permit2 = artifacts.require('Permit2');
     const MockERC20 = artifacts.require('MockERC20');
+    const TestHashing = artifacts.require('TestHashing');
     
-    // Deploy contracts using TronWeb
     const permit2Json = Permit2._json;
     const mockERC20Json = MockERC20._json;
+    const testHashingJson = TestHashing._json;
     
+    // Deploy contracts
     permit2 = await testHelpers.deployContract(testHelpers.ownerWeb(), permit2Json);
     mockERC20 = await testHelpers.deployContract(testHelpers.ownerWeb(), mockERC20Json, "Mock Token", "MOCK");
+    testHashing = await testHelpers.deployContract(testHelpers.ownerWeb(), testHashingJson);
     
-    // Get second account instance of Permit2 (this will be the caller)
+    // Get second account instance of Permit2
     permit2_2 = await testHelpers.getContractAt(testHelpers.secondWeb(), permit2Json, permit2.address);
+    
+    // Setup: Mint and approve tokens to Permit2
+    await mockERC20.mint(owner, TOKEN_AMOUNT).send();
+    await mockERC20.approve(permit2.address, TOKEN_AMOUNT).send();
+    
+    return { permit2, permit2_2, mockERC20, testHashing };
+  }
+  
+  // Helper to convert addresses to hex
+  function toHex(address) {
+    return TronWeb.address.toHex(address);
+  }
+  
+  // Helper to generate random nonce and deadline
+  function generatePermitParams() {
+    return {
+      nonce: Math.floor(Math.random() * 10000),
+      deadline: Math.floor(Date.now() / 1000) + 3600 // 1 hour from now
+    };
+  }
+  
+  // Helper to generate TIP-712 domain
+  function getDomain(verifyingContract) {
+    return {
+      name: 'Permit2',
+      chainId: chainId,
+      verifyingContract: toHex(verifyingContract)
+    };
+  }
+  
+  // Helper to check token balances
+  async function checkBalances(token, ...addresses) {
+    const balances = {};
+    for (const addr of addresses) {
+      balances[addr] = await token.balanceOf(addr).call();
+    }
+    return balances;
+  }
+
+  it('should verify hashTokenPermissions helper matches contract', async () => {
+    // Deploy contracts using helper
+    await deployContracts();
+    
+    // Get the actual TOKEN_PERMISSIONS_TYPEHASH from the contract
+    const actualTypeHash = await testHashing.getTokenPermissionsTypehash().call();
+    
+    // Test data
+    const testAmount = '1000000000000000000'; // 1 token
+    
+    // Call JS helper with the actual typehash from the contract
+    const jsHash = hashHelpers.hashTokenPermissions(
+      testHelpers.ownerWeb(),
+      mockERC20.address,
+      testAmount,
+      actualTypeHash
+    );
+    
+    // Call contract function
+    const contractHash = await testHashing.hashTokenPermissions(
+      [mockERC20.address, testAmount]
+    ).call();
+    
+    // Compare results
+    assert.equal(
+      jsHash.toLowerCase(),
+      contractHash.toLowerCase(),
+      'JS helper should produce same hash as contract'
+    );
+    
+    console.log('✅ hashTokenPermissions helper matches contract implementation');
+  });
+  
+  it('should successfully execute permitTransferFrom with TIP-712 signature', async () => {
+    // Deploy contracts
+    await deployContracts();
     
     console.log('\n=== Contract Addresses ===');
     console.log('Permit2:', permit2.address);
     console.log('MockERC20:', mockERC20.address);
     
-    // Setup: Mint and approve
-    await mockERC20.mint(owner, TOKEN_AMOUNT).send();
-    await mockERC20.approve(permit2.address, TOKEN_AMOUNT).send();
-    
     const allowance = await mockERC20.allowance(owner, permit2.address).call();
     console.log('Permit2 allowance:', allowance.toString());
     
-    // Get domain separator and chainId from contract
+    // Get domain separator from contract
     const domainSeparator = await permit2.DOMAIN_SEPARATOR().call();
     console.log('\n=== Contract Info ===');
     console.log('Domain Separator:', domainSeparator);
     
     // Prepare permit data
-    const nonce = Math.floor(Math.random() * 10000);
-    const deadline = Math.floor(Date.now() / 1000) + 3600;
-    
-    const TronWeb = testHelpers.ownerWeb().constructor;
+    const { nonce, deadline } = generatePermitParams();
     
     // Convert addresses to hex
-    const tokenHex = TronWeb.address.toHex(mockERC20.address);
-    const ownerHex = TronWeb.address.toHex(owner);
-    const secondAccountHex = TronWeb.address.toHex(secondAccount);
-    const permit2Hex = TronWeb.address.toHex(permit2.address);
+    const tokenHex = toHex(mockERC20.address);
+    const ownerHex = toHex(owner);
+    const secondAccountHex = toHex(secondAccount);
+    const permit2Hex = toHex(permit2.address);
     
     console.log('\n=== Permit Details ===');
     console.log('Token (hex):', tokenHex);
@@ -77,14 +180,7 @@ contract('Permit2 - TIP-712 Compliant', () => {
     if (testHelpers.ownerWeb().trx._signTypedData) {
       console.log('\n=== Generating TIP-712 Signature ===');
       
-      // Use the chainId we discovered for local testnet
-      const chainId = 3360022319;
-      
-      const domain = {
-        name: 'Permit2',
-        chainId: chainId,
-        verifyingContract: permit2Hex
-      };
+      const domain = getDomain(permit2.address);
       
       const types = {
         PermitTransferFrom: [
@@ -159,12 +255,11 @@ contract('Permit2 - TIP-712 Compliant', () => {
     }
     
     // Record balances before
-    const ownerBalanceBefore = await mockERC20.balanceOf(owner).call();
-    const secondBalanceBefore = await mockERC20.balanceOf(secondAccount).call();
+    const balancesBefore = await checkBalances(mockERC20, owner, secondAccount);
     
     console.log('\n=== Balances Before ===');
-    console.log('Owner:', ownerBalanceBefore.toString());
-    console.log('Second:', secondBalanceBefore.toString());
+    console.log('Owner:', balancesBefore[owner].toString());
+    console.log('Second:', balancesBefore[secondAccount].toString());
     
     // Execute permitTransferFrom from second account
     console.log('\n=== Executing permitTransferFrom ===');
@@ -195,16 +290,15 @@ contract('Permit2 - TIP-712 Compliant', () => {
       }
       
       // Verify balances changed
-      const ownerBalanceAfter = await mockERC20.balanceOf(owner).call();
-      const secondBalanceAfter = await mockERC20.balanceOf(secondAccount).call();
+      const balancesAfter = await checkBalances(mockERC20, owner, secondAccount);
       
       console.log('\n=== Balances After ===');
-      console.log('Owner:', ownerBalanceAfter.toString());
-      console.log('Second:', secondBalanceAfter.toString());
+      console.log('Owner:', balancesAfter[owner].toString());
+      console.log('Second:', balancesAfter[secondAccount].toString());
       
       // Calculate changes
-      const ownerChange = BigInt(ownerBalanceAfter) - BigInt(ownerBalanceBefore);
-      const secondChange = BigInt(secondBalanceAfter) - BigInt(secondBalanceBefore);
+      const ownerChange = BigInt(balancesAfter[owner]) - BigInt(balancesBefore[owner]);
+      const secondChange = BigInt(balancesAfter[secondAccount]) - BigInt(balancesBefore[secondAccount]);
       
       console.log('\n=== Balance Changes ===');
       console.log('Owner:', ownerChange.toString());
@@ -212,13 +306,13 @@ contract('Permit2 - TIP-712 Compliant', () => {
       
       // Assert the transfer worked
       assert.equal(
-        ownerBalanceAfter.toString(), 
-        (BigInt(ownerBalanceBefore) - BigInt(TRANSFER_AMOUNT)).toString(),
+        balancesAfter[owner].toString(), 
+        (BigInt(balancesBefore[owner]) - BigInt(TRANSFER_AMOUNT)).toString(),
         'Owner balance should decrease by transfer amount'
       );
       assert.equal(
-        secondBalanceAfter.toString(), 
-        (BigInt(secondBalanceBefore) + BigInt(TRANSFER_AMOUNT)).toString(),
+        balancesAfter[secondAccount].toString(), 
+        (BigInt(balancesBefore[secondAccount]) + BigInt(TRANSFER_AMOUNT)).toString(),
         'Recipient balance should increase by transfer amount'
       );
       
@@ -259,21 +353,12 @@ contract('Permit2 - TIP-712 Compliant', () => {
     console.log('\n=== Test: Transfer to Different Recipient ===');
     
     // This test shows that the spender can transfer to any recipient
-    const thirdAccount = testHelpers.accounts.third.address;
-    const TronWeb = testHelpers.ownerWeb().constructor;
-    
-    // Prepare new permit
-    const nonce = Math.floor(Math.random() * 10000);
-    const deadline = Math.floor(Date.now() / 1000) + 3600;
     const amount = '5000000000000000000'; // 5 tokens
     
-    const chainId = 3360022319;
+    // Prepare new permit
+    const { nonce, deadline } = generatePermitParams();
     
-    const domain = {
-      name: 'Permit2',
-      chainId: chainId,
-      verifyingContract: TronWeb.address.toHex(permit2.address)
-    };
+    const domain = getDomain(permit2.address);
     
     const types = {
       PermitTransferFrom: [
@@ -290,10 +375,10 @@ contract('Permit2 - TIP-712 Compliant', () => {
     
     const message = {
       permitted: {
-        token: TronWeb.address.toHex(mockERC20.address),
+        token: toHex(mockERC20.address),
         amount: amount
       },
-      spender: TronWeb.address.toHex(secondAccount), // Second account is still the spender
+      spender: toHex(secondAccount), // Second account is still the spender
       nonce: nonce,
       deadline: deadline
     };
@@ -306,7 +391,7 @@ contract('Permit2 - TIP-712 Compliant', () => {
     );
     
     // Get balance before
-    const thirdBalanceBefore = await mockERC20.balanceOf(thirdAccount).call();
+    const balancesBefore = await checkBalances(mockERC20, thirdAccount);
     
     // Execute transfer to third account
     const result = await permit2_2.permitTransferFrom(
@@ -316,7 +401,7 @@ contract('Permit2 - TIP-712 Compliant', () => {
         deadline
       ],
       [thirdAccount, amount], // Transfer to third account instead
-      TronWeb.address.toHex(owner),
+      toHex(owner),
       signature
     ).send({
       shouldPollResponse: true
@@ -325,14 +410,14 @@ contract('Permit2 - TIP-712 Compliant', () => {
     console.log('✅ Transfer to third account successful!');
     
     // Verify balance
-    const thirdBalanceAfter = await mockERC20.balanceOf(thirdAccount).call();
+    const balancesAfter = await checkBalances(mockERC20, thirdAccount);
     console.log('Third account balance change:', 
-      (BigInt(thirdBalanceAfter) - BigInt(thirdBalanceBefore)).toString()
+      (BigInt(balancesAfter[thirdAccount]) - BigInt(balancesBefore[thirdAccount])).toString()
     );
     
     assert.equal(
-      thirdBalanceAfter.toString(),
-      (BigInt(thirdBalanceBefore) + BigInt(amount)).toString(),
+      balancesAfter[thirdAccount].toString(),
+      (BigInt(balancesBefore[thirdAccount]) + BigInt(amount)).toString(),
       'Third account should receive tokens'
     );
   });
@@ -340,17 +425,10 @@ contract('Permit2 - TIP-712 Compliant', () => {
   it('should fail with expired deadline', async () => {
     console.log('\n=== Test: Expired Deadline ===');
     
-    const TronWeb = testHelpers.ownerWeb().constructor;
     const nonce = Math.floor(Math.random() * 10000);
-    const deadline = Math.floor(Date.now() / 1000) - 3600; // 1 hour ago
+    const deadline = Math.floor(Date.now() / 1000) - 3600; // 1 hour ago - expired
     
-    const chainId = 3360022319;
-    
-    const domain = {
-      name: 'Permit2',
-      chainId: chainId,
-      verifyingContract: TronWeb.address.toHex(permit2.address)
-    };
+    const domain = getDomain(permit2.address);
     
     const types = {
       PermitTransferFrom: [
@@ -367,10 +445,10 @@ contract('Permit2 - TIP-712 Compliant', () => {
     
     const message = {
       permitted: {
-        token: TronWeb.address.toHex(mockERC20.address),
+        token: toHex(mockERC20.address),
         amount: '1000000000000000000'
       },
-      spender: TronWeb.address.toHex(secondAccount),
+      spender: toHex(secondAccount),
       nonce: nonce,
       deadline: deadline
     };
@@ -390,7 +468,7 @@ contract('Permit2 - TIP-712 Compliant', () => {
           deadline
         ],
         [secondAccount, '1000000000000000000'],
-        TronWeb.address.toHex(owner),
+        toHex(owner),
         signature
       ).send({
         shouldPollResponse: true

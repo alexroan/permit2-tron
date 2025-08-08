@@ -33,6 +33,10 @@ contract TestHashing is ISignatureTransfer, TIP712 {
         return permit.hashWithWitness(witness, witnessTypeString);
     }
 
+    function hashTypedData(bytes32 dataHash) public view returns (bytes32) {
+        return _hashTypedData(dataHash);
+    }
+
     /// Stubs
 
     function nonceBitmap(address, uint256) external view returns (uint256) {return 0;}

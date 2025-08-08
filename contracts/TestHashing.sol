@@ -37,6 +37,10 @@ contract TestHashing is ISignatureTransfer, TIP712 {
         return _hashTypedData(dataHash);
     }
 
+    function verify(bytes calldata signature, bytes32 hash, address claimedSigner) public view {
+        signature.verify(hash, claimedSigner);
+    }
+
     /// Stubs
 
     function nonceBitmap(address, uint256) external view returns (uint256) {return 0;}

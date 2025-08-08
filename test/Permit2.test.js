@@ -53,6 +53,16 @@ const hashHelpers = {
     
     // Return keccak256 hash
     return tronWeb.utils.ethersUtils.keccak256(encoded);
+  },
+  
+  // Mimics TIP712._hashTypedData
+  hashTypedData: (tronWeb, domainSeparator, structHash) => {
+    // Encode according to EIP-712/TIP-712 standard
+    // "\x19\x01" + domainSeparator + structHash
+    const encoded = '0x1901' + domainSeparator.slice(2) + structHash.slice(2);
+    
+    // Return keccak256 hash
+    return tronWeb.utils.ethersUtils.keccak256(encoded);
   }
 };
 
@@ -236,6 +246,39 @@ contract('Permit2 - TIP-712 Compliant', () => {
     );
     
     console.log('✅ hashWithWitness helper matches contract implementation');
+  });
+  
+  it('should verify hashTypedData helper matches contract', async () => {
+    // Deploy contracts using helper
+    await deployContracts();
+    
+    // Get domain separator from the contract
+    const domainSeparator = await testHashing.DOMAIN_SEPARATOR().call();
+    
+    // Create a test struct hash (can be any hash)
+    const testData = 'Some test data for hashing';
+    const structHash = testHelpers.ownerWeb().utils.ethersUtils.keccak256(
+      testHelpers.ownerWeb().utils.ethersUtils.toUtf8Bytes(testData)
+    );
+    
+    // Call JS helper
+    const jsHash = hashHelpers.hashTypedData(
+      testHelpers.ownerWeb(),
+      domainSeparator,
+      structHash
+    );
+    
+    // Call contract function
+    const contractHash = await testHashing.hashTypedData(structHash).call();
+    
+    // Compare results
+    assert.equal(
+      jsHash.toLowerCase(),
+      contractHash.toLowerCase(),
+      'JS helper should produce same hash as contract'
+    );
+    
+    console.log('✅ hashTypedData helper matches contract implementation');
   });
   
   it.skip('should successfully execute permitTransferFrom with TIP-712 signature', async () => {

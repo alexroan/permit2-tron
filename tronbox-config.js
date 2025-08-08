@@ -45,7 +45,7 @@ module.exports = {
   },
   compilers: {
     solc: {
-      version: '0.8.18',
+      version: '0.8.23',
       // An object with the same schema as the settings entry in the Input JSON.
       // See https://docs.soliditylang.org/en/latest/using-the-compiler.html#input-description
       settings: {

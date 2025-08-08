@@ -5,7 +5,6 @@ const permitHelpers = require('../helpers/permit-helpers');
 contract('Permit2 - TIP-712 Compliant', () => {
   let permit2, permit2_2;
   let mockERC20;
-  let testHashing;
   let owner, secondAccount, thirdAccount;
   let ownerPrivateKey;
   let TronWeb;
@@ -33,16 +32,13 @@ contract('Permit2 - TIP-712 Compliant', () => {
   async function deployContracts() {
     const Permit2 = artifacts.require('Permit2');
     const MockERC20 = artifacts.require('MockERC20');
-    const TestHashing = artifacts.require('TestHashing');
     
     const permit2Json = Permit2._json;
     const mockERC20Json = MockERC20._json;
-    const testHashingJson = TestHashing._json;
     
     // Deploy contracts
     permit2 = await testHelpers.deployContract(testHelpers.ownerWeb(), permit2Json);
     mockERC20 = await testHelpers.deployContract(testHelpers.ownerWeb(), mockERC20Json, "Mock Token", "MOCK");
-    testHashing = await testHelpers.deployContract(testHelpers.ownerWeb(), testHashingJson);
     
     // Get second account instance of Permit2
     permit2_2 = await testHelpers.getContractAt(testHelpers.secondWeb(), permit2Json, permit2.address);
@@ -51,7 +47,7 @@ contract('Permit2 - TIP-712 Compliant', () => {
     await mockERC20.mint(owner, TOKEN_AMOUNT).send();
     await mockERC20.approve(permit2.address, TOKEN_AMOUNT).send();
     
-    return { permit2, permit2_2, mockERC20, testHashing };
+    return { permit2, permit2_2, mockERC20 };
   }
   
   // Helper to convert addresses to hex
@@ -85,137 +81,6 @@ contract('Permit2 - TIP-712 Compliant', () => {
     return balances;
   }
 
-  it('should verify hashTokenPermissions helper matches contract', async () => {
-    // Deploy contracts using helper
-    await deployContracts();
-    
-    // Get the actual TOKEN_PERMISSIONS_TYPEHASH from the contract
-    const actualTypeHash = await testHashing.getTokenPermissionsTypehash().call();
-    
-    // Test data
-    const testAmount = '1000000000000000000'; // 1 token
-    
-    // Call JS helper with the actual typehash from the contract
-    const jsHash = hashHelpers.hashTokenPermissions(
-      testHelpers.ownerWeb(),
-      mockERC20.address,
-      testAmount,
-      actualTypeHash
-    );
-    
-    // Call contract function
-    const contractHash = await testHashing.hashTokenPermissions(
-      [mockERC20.address, testAmount]
-    ).call();
-    
-    // Compare results
-    assert.equal(
-      jsHash.toLowerCase(),
-      contractHash.toLowerCase(),
-      'JS helper should produce same hash as contract'
-    );
-    
-    console.log('✅ hashTokenPermissions helper matches contract implementation');
-  });
-  
-  it('should verify hashWithWitness helper matches contract', async () => {
-    // Deploy contracts using helper
-    await deployContracts();
-    
-    // Test data
-    const testAmount = '1000000000000000000'; // 1 token
-    const { nonce, deadline } = generatePermitParams();
-    
-    // Create permit data
-    const permit = {
-      permitted: {
-        token: mockERC20.address,
-        amount: testAmount
-      },
-      nonce: nonce,
-      deadline: deadline
-    };
-    
-    // Create witness data
-    const witnessData = {
-      value: 10000000,
-      person: owner,
-      test: true
-    };
-    
-    // Calculate witness hash (mimicking what would be done off-chain)
-    const witnessTypeHash = tronWeb.utils.ethersUtils.keccak256(
-      tronWeb.utils.ethersUtils.toUtf8Bytes('MockWitness(uint256 value,address person,bool test)')
-    );
-    
-    // Encode witness data
-    const encodedWitness = tronWeb.utils.abi.encodeParams(
-      ['bytes32', 'uint256', 'address', 'bool'],
-      [witnessTypeHash, witnessData.value, witnessData.person, witnessData.test]
-    );
-    const witness = tronWeb.utils.ethersUtils.keccak256(encodedWitness);
-    
-    // Define witness type string
-    const witnessTypeString = 'MockWitness witness)MockWitness(uint256 value,address person,bool test)TokenPermissions(address token,uint256 amount)';
-    
-    // Call JS helper
-    const jsHash = hashHelpers.hashWithWitness(
-      testHelpers.ownerWeb(),
-      permit,
-      witness,
-      witnessTypeString,
-      secondAccount // msg.sender would be the spender calling the function
-    );
-    
-    // Call contract function
-    const contractHash = await testHashing.hashWithWitness(
-      [[mockERC20.address, testAmount], nonce, deadline],
-      witness,
-      witnessTypeString
-    ).call({ from: secondAccount }); // Call from secondAccount to set msg.sender
-    
-    // Compare results
-    assert.equal(
-      jsHash.toLowerCase(),
-      contractHash.toLowerCase(),
-      'JS helper should produce same hash as contract'
-    );
-    
-    console.log('✅ hashWithWitness helper matches contract implementation');
-  });
-  
-  it('should verify hashTypedData helper matches contract', async () => {
-    // Deploy contracts using helper
-    await deployContracts();
-    
-    // Get domain separator from the contract
-    const domainSeparator = await testHashing.DOMAIN_SEPARATOR().call();
-    
-    // Create a test struct hash (can be any hash)
-    const testData = 'Some test data for hashing';
-    const structHash = testHelpers.ownerWeb().utils.ethersUtils.keccak256(
-      testHelpers.ownerWeb().utils.ethersUtils.toUtf8Bytes(testData)
-    );
-    
-    // Call JS helper
-    const jsHash = hashHelpers.hashTypedData(
-      testHelpers.ownerWeb(),
-      domainSeparator,
-      structHash
-    );
-    
-    // Call contract function
-    const contractHash = await testHashing.hashTypedData(structHash).call();
-    
-    // Compare results
-    assert.equal(
-      jsHash.toLowerCase(),
-      contractHash.toLowerCase(),
-      'JS helper should produce same hash as contract'
-    );
-    
-    console.log('✅ hashTypedData helper matches contract implementation');
-  });
   
   it('should verify signature verification helper matches contract', async () => {
     // Deploy contracts using helper

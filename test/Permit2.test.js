@@ -1,5 +1,6 @@
 const testHelpers = require('./test-helpers');
 const hashHelpers = require('../helpers/hash-helpers');
+const permitHelpers = require('../helpers/permit-helpers');
 
 contract('Permit2 - TIP-712 Compliant', () => {
   let permit2, permit2_2;
@@ -332,22 +333,26 @@ contract('Permit2 - TIP-712 Compliant', () => {
     console.log('\n=== Contract Info ===');
     console.log('Domain Separator:', domainSeparator);
     
-    // Prepare permit data
+    // Prepare permit data using helpers
     const { nonce, deadline } = generatePermitParams();
     
-    // Convert addresses to hex
-    const tokenHex = toHex(mockERC20.address);
-    const ownerHex = toHex(owner);
-    const secondAccountHex = toHex(secondAccount);
-    const permit2Hex = toHex(permit2.address);
+    // Create permit and transfer details using helpers
+    const permit = permitHelpers.createPermit(
+      mockERC20.address,
+      TRANSFER_AMOUNT,
+      secondAccount, // The second account will call permitTransferFrom
+      nonce,
+      deadline
+    );
+    
+    const transferDetails = permitHelpers.createTransferDetails(
+      secondAccount, // Transfer to second account
+      TRANSFER_AMOUNT
+    );
     
     console.log('\n=== Permit Details ===');
-    console.log('Token (hex):', tokenHex);
-    console.log('Owner (hex):', ownerHex);
-    console.log('Spender/Caller (hex):', secondAccountHex);
-    console.log('Amount:', TRANSFER_AMOUNT);
-    console.log('Nonce:', nonce);
-    console.log('Deadline:', deadline);
+    console.log('Permit:', JSON.stringify(permit, null, 2));
+    console.log('Transfer Details:', JSON.stringify(transferDetails, null, 2));
     
     // Generate signature
     let signature;
@@ -372,14 +377,15 @@ contract('Permit2 - TIP-712 Compliant', () => {
       
       // CRITICAL: The spender MUST be the account that will call permitTransferFrom
       // In Permit2, this is enforced by using msg.sender in the hash
+      // Convert addresses to hex for TIP-712
       const message = {
         permitted: {
-          token: tokenHex,
-          amount: TRANSFER_AMOUNT
+          token: permitHelpers.toHex(permit.permitted.token, testHelpers.ownerWeb()),
+          amount: permit.permitted.amount
         },
-        spender: secondAccountHex, // The second account will call permitTransferFrom
-        nonce: nonce,
-        deadline: deadline
+        spender: permitHelpers.toHex(permit.spender, testHelpers.ownerWeb()),
+        nonce: permit.nonce,
+        deadline: permit.deadline
       };
       
       console.log('Domain:', JSON.stringify(domain, null, 2));
@@ -397,33 +403,18 @@ contract('Permit2 - TIP-712 Compliant', () => {
       // Fallback to manual signing
       console.log('\n=== Manual TIP-712 Signature Generation ===');
       
-      const TOKEN_PERMISSIONS_TYPEHASH = '0x' + TronWeb.sha3(
-        'TokenPermissions(address token,uint256 amount)', false
-      );
-      const PERMIT_TRANSFER_FROM_TYPEHASH = '0x' + TronWeb.sha3(
-        'PermitTransferFrom(TokenPermissions permitted,address spender,uint256 nonce,uint256 deadline)TokenPermissions(address token,uint256 amount)', false
+      // Use helper to generate the hash
+      const { structHash, finalHash } = permitHelpers.getPermitTransferFromHash(
+        testHelpers.ownerWeb(),
+        permit,
+        domainSeparator
       );
       
-      // For TIP-712, addresses need to be encoded as uint160
-      // TronWeb's encodeParams should handle this when we specify uint160 type
-      const tokenPermissionsEncoded = testHelpers.ownerWeb().utils.abi.encodeParams(
-        ['bytes32', 'uint160', 'uint256'],
-        [TOKEN_PERMISSIONS_TYPEHASH, '0x' + tokenHex.slice(2), TRANSFER_AMOUNT]
-      );
-      const tokenPermissionsHash = '0x' + TronWeb.sha3(tokenPermissionsEncoded, false);
-      
-      const permitEncoded = testHelpers.ownerWeb().utils.abi.encodeParams(
-        ['bytes32', 'bytes32', 'uint160', 'uint256', 'uint256'],
-        [PERMIT_TRANSFER_FROM_TYPEHASH, tokenPermissionsHash, '0x' + secondAccountHex.slice(2), nonce, deadline]
-      );
-      const permitHash = '0x' + TronWeb.sha3(permitEncoded, false);
-      
-      const messageHash = '0x' + TronWeb.sha3(
-        '0x1901' + domainSeparator.slice(2) + permitHash.slice(2), false
-      );
+      console.log('Struct Hash:', structHash);
+      console.log('Final Hash:', finalHash);
       
       signature = await testHelpers.ownerWeb().trx.sign(
-        messageHash.slice(2),
+        finalHash.slice(2),
         ownerPrivateKey,
         false
       );
@@ -443,13 +434,9 @@ contract('Permit2 - TIP-712 Compliant', () => {
     
     try {
       const result = await permit2_2.permitTransferFrom(
-        [
-          [mockERC20.address, TRANSFER_AMOUNT],
-          nonce,
-          deadline
-        ],
-        [secondAccount, TRANSFER_AMOUNT], // Transfer to the second account
-        ownerHex, // From the owner
+        permitHelpers.formatPermitForCall(permit),
+        permitHelpers.formatTransferDetailsForCall(transferDetails),
+        permitHelpers.toHex(owner, testHelpers.ownerWeb()), // From the owner
         signature
       ).send({
         shouldPollResponse: true
@@ -529,9 +516,22 @@ contract('Permit2 - TIP-712 Compliant', () => {
     
     // This test shows that the spender can transfer to any recipient
     const amount = '5000000000000000000'; // 5 tokens
-    
-    // Prepare new permit
     const { nonce, deadline } = generatePermitParams();
+    
+    // Create permit and transfer details using helpers
+    const permit = permitHelpers.createPermit(
+      mockERC20.address,
+      amount,
+      secondAccount, // Second account is still the spender
+      nonce,
+      deadline
+    );
+    
+    // Note: Transfer details has different recipient than the spender
+    const transferDetails = permitHelpers.createTransferDetails(
+      thirdAccount, // Transfer to third account
+      amount
+    );
     
     const domain = getDomain(permit2.address);
     
@@ -550,12 +550,12 @@ contract('Permit2 - TIP-712 Compliant', () => {
     
     const message = {
       permitted: {
-        token: toHex(mockERC20.address),
-        amount: amount
+        token: permitHelpers.toHex(permit.permitted.token, testHelpers.ownerWeb()),
+        amount: permit.permitted.amount
       },
-      spender: toHex(secondAccount), // Second account is still the spender
-      nonce: nonce,
-      deadline: deadline
+      spender: permitHelpers.toHex(permit.spender, testHelpers.ownerWeb()),
+      nonce: permit.nonce,
+      deadline: permit.deadline
     };
     
     const signature = await testHelpers.ownerWeb().trx._signTypedData(
@@ -570,13 +570,9 @@ contract('Permit2 - TIP-712 Compliant', () => {
     
     // Execute transfer to third account
     const result = await permit2_2.permitTransferFrom(
-      [
-        [mockERC20.address, amount],
-        nonce,
-        deadline
-      ],
-      [thirdAccount, amount], // Transfer to third account instead
-      toHex(owner),
+      permitHelpers.formatPermitForCall(permit),
+      permitHelpers.formatTransferDetailsForCall(transferDetails),
+      permitHelpers.toHex(owner, testHelpers.ownerWeb()),
       signature
     ).send({
       shouldPollResponse: true
@@ -602,6 +598,21 @@ contract('Permit2 - TIP-712 Compliant', () => {
     
     const nonce = Math.floor(Math.random() * 10000);
     const deadline = Math.floor(Date.now() / 1000) - 3600; // 1 hour ago - expired
+    const amount = '1000000000000000000';
+    
+    // Create permit with expired deadline
+    const permit = permitHelpers.createPermit(
+      mockERC20.address,
+      amount,
+      secondAccount,
+      nonce,
+      deadline
+    );
+    
+    const transferDetails = permitHelpers.createTransferDetails(
+      secondAccount,
+      amount
+    );
     
     const domain = getDomain(permit2.address);
     
@@ -620,12 +631,12 @@ contract('Permit2 - TIP-712 Compliant', () => {
     
     const message = {
       permitted: {
-        token: toHex(mockERC20.address),
-        amount: '1000000000000000000'
+        token: permitHelpers.toHex(permit.permitted.token, testHelpers.ownerWeb()),
+        amount: permit.permitted.amount
       },
-      spender: toHex(secondAccount),
-      nonce: nonce,
-      deadline: deadline
+      spender: permitHelpers.toHex(permit.spender, testHelpers.ownerWeb()),
+      nonce: permit.nonce,
+      deadline: permit.deadline
     };
     
     const signature = await testHelpers.ownerWeb().trx._signTypedData(
@@ -637,13 +648,9 @@ contract('Permit2 - TIP-712 Compliant', () => {
     
     try {
       await permit2_2.permitTransferFrom(
-        [
-          [mockERC20.address, '1000000000000000000'],
-          nonce,
-          deadline
-        ],
-        [secondAccount, '1000000000000000000'],
-        toHex(owner),
+        permitHelpers.formatPermitForCall(permit),
+        permitHelpers.formatTransferDetailsForCall(transferDetails),
+        permitHelpers.toHex(owner, testHelpers.ownerWeb()),
         signature
       ).send({
         shouldPollResponse: true
@@ -666,59 +673,52 @@ contract('Permit2 - TIP-712 Compliant', () => {
     console.log('Initial balances:');
     await checkBalances(mockERC20, owner, secondAccount);
     
-    // Create permit parameters
+    // Create permit parameters using helpers
     const { nonce, deadline } = generatePermitParams();
     
     // Define witness data
     const witnessValue = 12345;
     const witnessTypeString = "ExtraData(uint256 value)";
     
-    // Create witness hash - this is the hash of the actual witness data
-    const witness = testHelpers.ownerWeb().utils.ethersUtils.keccak256(
-      testHelpers.ownerWeb().utils.abi.encodeParams(['uint256'], [witnessValue])
+    // Create witness hash using helper
+    const witness = permitHelpers.createWitnessHash(
+      testHelpers.ownerWeb(),
+      witnessValue
     );
     console.log('Witness hash:', witness);
     
-    // Build permit structure
-    const permit = {
-      permitted: {
-        token: toHex(mockERC20.address),
-        amount: TRANSFER_AMOUNT
-      },
-      spender: toHex(secondAccount), // The spender is the account calling permitWitnessTransferFrom
-      nonce: nonce,
-      deadline: deadline
-    };
+    // Build permit and transfer details using helpers
+    const permit = permitHelpers.createPermit(
+      mockERC20.address,
+      TRANSFER_AMOUNT,
+      secondAccount, // The spender is the account calling permitWitnessTransferFrom
+      nonce,
+      deadline
+    );
     
-    const transferDetails = {
-      to: toHex(secondAccount),
-      requestedAmount: TRANSFER_AMOUNT
-    };
+    const transferDetails = permitHelpers.createTransferDetails(
+      secondAccount,
+      TRANSFER_AMOUNT
+    );
     
     console.log('Permit:', permit);
     console.log('Transfer details:', transferDetails);
     
-    // Generate signature using our verified helper functions
-    // Step 1: Use hashWithWitness to create the struct hash
-    const structHash = hashHelpers.hashWithWitness(
+    // Get domain separator
+    const domainSeparator = await permit2.DOMAIN_SEPARATOR().call();
+    console.log('Domain separator:', domainSeparator);
+    
+    // Generate hash using permit helper
+    const { structHash, finalHash } = permitHelpers.getPermitWitnessTransferFromHash(
       testHelpers.ownerWeb(),
       permit,
       witness,
       witnessTypeString,
-      secondAccount // msg.sender will be the secondAccount calling permitWitnessTransferFrom
+      secondAccount, // msg.sender will be the secondAccount calling permitWitnessTransferFrom
+      domainSeparator
     );
+    
     console.log('Struct hash from helper:', structHash);
-    
-    // Step 2: Get domain separator
-    const domainSeparator = await permit2.DOMAIN_SEPARATOR().call();
-    console.log('Domain separator:', domainSeparator);
-    
-    // Step 3: Create final hash using hashTypedData
-    const finalHash = hashHelpers.hashTypedData(
-      testHelpers.ownerWeb(),
-      domainSeparator,
-      structHash
-    );
     console.log('Final hash to sign:', finalHash);
     
     // Step 4: Sign with ethersUtils for consistency
@@ -733,13 +733,9 @@ contract('Permit2 - TIP-712 Compliant', () => {
     console.log('\nExecuting permitWitnessTransferFrom...');
     // Use permit2_2 instance which is configured with the second account
     const tx = await permit2_2.permitWitnessTransferFrom(
-      [
-        [mockERC20.address, TRANSFER_AMOUNT],
-        nonce,
-        deadline
-      ],
-      [secondAccount, TRANSFER_AMOUNT],
-      toHex(owner),
+      permitHelpers.formatPermitForCall(permit),
+      permitHelpers.formatTransferDetailsForCall(transferDetails),
+      permitHelpers.toHex(owner, testHelpers.ownerWeb()),
       witness,
       witnessTypeString,
       signature

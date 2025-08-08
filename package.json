@@ -1,6 +1,6 @@
 {
   "name": "@alexroan/permit2-tron",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Permit2 implementation for Tron - Next-generation token approval/meta-tx system",
   "scripts": {
     "build": "tronbox compile",

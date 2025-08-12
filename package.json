@@ -3,8 +3,8 @@
   "version": "0.0.3",
   "description": "Permit2 implementation for Tron - Next-generation token approval/meta-tx system",
   "scripts": {
-    "build": "tronbox compile",
-    "test": "tronbox test",
+    "compile": "tronbox compile",
+    "test:tronbox": "tronbox test",
     "migrate": "tronbox migrate",
     "migrate:shasta": "source .env && tronbox migrate --network shasta",
     "migrate:nile": "source .env && tronbox migrate --network nile",

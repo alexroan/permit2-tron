@@ -1,0 +1,39 @@
+name: TVM Contracts CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  test:
+    name: Test TVM Contracts
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+          run_install: false
+
+      - name: Install TronBox
+        run: |
+          npm install -g tronbox
+          tronbox version
+
+      - name: Run tests
+        run: make test-tronbox
+        env:
+          PRIVATE_KEY_NILE: ${{ secrets.PRIVATE_KEY_NILE || '0000000000000000000000000000000000000000000000000000000000000000' }}

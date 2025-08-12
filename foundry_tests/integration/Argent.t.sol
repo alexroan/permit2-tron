@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import {Test} from "forge-std/Test.sol";
-import {IERC1271} from "../../src/interfaces/IERC1271.sol";
+import {Test} from "forge-std/src/Test.sol";
+import {IERC1271} from "../../contracts/interfaces/IERC1271.sol";
 
 interface WalletFactory {
     function owner() external returns (address);

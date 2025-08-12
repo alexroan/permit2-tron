@@ -1,11 +1,11 @@
-pragma solidity 0.8.17;
+pragma solidity 0.8.23;
 
-import {Test} from "forge-std/Test.sol";
-import {StdInvariant} from "forge-std/StdInvariant.sol";
+import {Test} from "forge-std/src/Test.sol";
+import {StdInvariant} from "forge-std/src/StdInvariant.sol";
 import {TokenProvider} from "./utils/TokenProvider.sol";
-import {Permit2} from "../src/Permit2.sol";
-import {IAllowanceTransfer} from "../src/interfaces/IAllowanceTransfer.sol";
-import {SignatureVerification} from "../src/libraries/SignatureVerification.sol";
+import {Permit2} from "../contracts/Permit2.sol";
+import {IAllowanceTransfer} from "../contracts/interfaces/IAllowanceTransfer.sol";
+import {SignatureVerification} from "../contracts/libraries/SignatureVerification.sol";
 import {PermitSignature} from "./utils/PermitSignature.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
 import {Permitter} from "./actors/Permitter.sol";

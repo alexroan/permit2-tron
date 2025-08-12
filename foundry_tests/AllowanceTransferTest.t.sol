@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import {StdStorage, stdStorage, Test} from "forge-std/Test.sol";
+import {StdStorage, stdStorage, Test} from "forge-std/src/Test.sol";
 import {TokenProvider} from "./utils/TokenProvider.sol";
-import {Permit2} from "../src/Permit2.sol";
+import {Permit2} from "../contracts/Permit2.sol";
 import {PermitSignature} from "./utils/PermitSignature.sol";
-import {SignatureVerification} from "../src/libraries/SignatureVerification.sol";
+import {SignatureVerification} from "../contracts/libraries/SignatureVerification.sol";
 import {AddressBuilder} from "./utils/AddressBuilder.sol";
 import {StructBuilder} from "./utils/StructBuilder.sol";
 import {AmountBuilder} from "./utils/AmountBuilder.sol";
-import {AllowanceTransfer} from "../src/AllowanceTransfer.sol";
-import {SignatureExpired, InvalidNonce} from "../src/PermitErrors.sol";
-import {IAllowanceTransfer} from "../src/interfaces/IAllowanceTransfer.sol";
+import {AllowanceTransfer} from "../contracts/AllowanceTransfer.sol";
+import {SignatureExpired, InvalidNonce} from "../contracts/PermitErrors.sol";
+import {IAllowanceTransfer} from "../contracts/interfaces/IAllowanceTransfer.sol";
 import {GasSnapshot} from "forge-gas-snapshot/GasSnapshot.sol";
 
 contract AllowanceTransferTest is Test, TokenProvider, PermitSignature, GasSnapshot {

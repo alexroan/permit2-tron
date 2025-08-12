@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import {Vm} from "forge-std/Vm.sol";
-import {EIP712} from "openzeppelin-contracts/contracts/utils/cryptography/draft-EIP712.sol";
-import {ECDSA} from "openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
-import {IAllowanceTransfer} from "../../src/interfaces/IAllowanceTransfer.sol";
-import {ISignatureTransfer} from "../../src/interfaces/ISignatureTransfer.sol";
+import {Vm} from "forge-std/src/Vm.sol";
+import {EIP712} from "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {IAllowanceTransfer} from "../../contracts/interfaces/IAllowanceTransfer.sol";
+import {ISignatureTransfer} from "../../contracts/interfaces/ISignatureTransfer.sol";
 
 contract PermitSignature {
     Vm private constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));

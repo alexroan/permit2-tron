@@ -1,8 +1,8 @@
-pragma solidity 0.8.17;
+pragma solidity 0.8.23;
 
-import {Vm} from "forge-std/Vm.sol";
-import {Permit2} from "../../src/Permit2.sol";
-import {IAllowanceTransfer} from "../../src/interfaces/IAllowanceTransfer.sol";
+import {Vm} from "forge-std/src/Vm.sol";
+import {Permit2} from "../../contracts/Permit2.sol";
+import {IAllowanceTransfer} from "../../contracts/interfaces/IAllowanceTransfer.sol";
 import {PermitSignature} from "../utils/PermitSignature.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
 

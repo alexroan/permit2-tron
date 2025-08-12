@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import {Script} from "forge-std/Script.sol";
+import {Script} from "forge-std/src/Script.sol";
 
 /// @notice helper to deploy permit2 from precompiled bytecode
 /// @dev useful if testing externally against permit2 and want to avoid

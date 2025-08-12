@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import {Test} from "forge-std/Test.sol";
+import {Test} from "forge-std/src/Test.sol";
 import {SafeTransferLib} from "solmate/src/utils/SafeTransferLib.sol";
 import {ERC20} from "solmate/src/tokens/ERC20.sol";
 import {AddressBuilder} from "../utils/AddressBuilder.sol";
 import {StructBuilder} from "../utils/StructBuilder.sol";
 import {PermitSignature} from "../utils/PermitSignature.sol";
-import {Permit2} from "../../src/Permit2.sol";
-import {IAllowanceTransfer} from "../../src/interfaces/IAllowanceTransfer.sol";
-import {ISignatureTransfer} from "../../src/interfaces/ISignatureTransfer.sol";
+import {Permit2} from "../../contracts/Permit2.sol";
+import {IAllowanceTransfer} from "../../contracts/interfaces/IAllowanceTransfer.sol";
+import {ISignatureTransfer} from "../../contracts/interfaces/ISignatureTransfer.sol";
 
 /// @dev generic token test suite
 /// @dev extend this contract with a concrete token on mainnet to test it

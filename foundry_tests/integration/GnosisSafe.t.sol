@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {Test} from "forge-std/Test.sol";
-import {IERC1271} from "../../src/interfaces/IERC1271.sol";
+import {Test} from "forge-std/src/Test.sol";
+import {IERC1271} from "../../contracts/interfaces/IERC1271.sol";
 
 interface GnosisSafeProxy is IERC1271 {
     function setup(

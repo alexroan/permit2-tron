@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import {Test} from "forge-std/Test.sol";
+import {Test} from "forge-std/src/Test.sol";
 import {PermitSignature} from "./utils/PermitSignature.sol";
 
 contract CompactSignature is Test, PermitSignature {

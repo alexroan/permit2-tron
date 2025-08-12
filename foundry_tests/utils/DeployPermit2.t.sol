@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import {Test} from "forge-std/Test.sol";
-import {IAllowanceTransfer} from "../../src/interfaces/IAllowanceTransfer.sol";
-import {ISignatureTransfer} from "../../src/interfaces/ISignatureTransfer.sol";
+import {Test} from "forge-std/src/Test.sol";
+import {IAllowanceTransfer} from "../../contracts/interfaces/IAllowanceTransfer.sol";
+import {ISignatureTransfer} from "../../contracts/interfaces/ISignatureTransfer.sol";
 import {TokenProvider} from "./TokenProvider.sol";
 import {PermitSignature} from "./PermitSignature.sol";
 import {DeployPermit2} from "./DeployPermit2.sol";
-import {Permit2} from "../../src/Permit2.sol";
+import {Permit2} from "../../contracts/Permit2.sol";
 
 contract DeployPermit2Test is Test, DeployPermit2, PermitSignature, TokenProvider {
     Permit2 permit2;

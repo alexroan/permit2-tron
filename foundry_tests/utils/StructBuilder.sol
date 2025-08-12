@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import {IAllowanceTransfer} from "../../src/interfaces/IAllowanceTransfer.sol";
-import {ISignatureTransfer} from "../../src/interfaces/ISignatureTransfer.sol";
+import {IAllowanceTransfer} from "../../contracts/interfaces/IAllowanceTransfer.sol";
+import {ISignatureTransfer} from "../../contracts/interfaces/ISignatureTransfer.sol";
 import {AddressBuilder} from "./AddressBuilder.sol";
 
 library StructBuilder {

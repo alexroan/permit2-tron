@@ -1,22 +1,22 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import {Test} from "forge-std/Test.sol";
+import {Test} from "forge-std/src/Test.sol";
 
-import {SafeERC20, IERC20, IERC20Permit} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import {SafeERC20, IERC20, IERC20Permit} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {DSTestPlus} from "solmate/src/test/utils/DSTestPlus.sol";
 import {MockERC20, ERC20} from "solmate/src/test/utils/mocks/MockERC20.sol";
-import {Permit2} from "../src/Permit2.sol";
-import {Permit2Lib} from "../src/libraries/Permit2Lib.sol";
+import {Permit2} from "../contracts/Permit2.sol";
+import {Permit2Lib} from "../contracts/libraries/Permit2Lib.sol";
 import {MockNonPermitERC20} from "./mocks/MockNonPermitERC20.sol";
 import {PermitSignature} from "./utils/PermitSignature.sol";
 import {GasSnapshot} from "forge-gas-snapshot/GasSnapshot.sol";
-import {IAllowanceTransfer} from "../src/interfaces/IAllowanceTransfer.sol";
+import {IAllowanceTransfer} from "../contracts/interfaces/IAllowanceTransfer.sol";
 import {MockPermit2Lib} from "./mocks/MockPermit2Lib.sol";
-import {SafeCast160} from "../src/libraries/SafeCast160.sol";
+import {SafeCast160} from "../contracts/libraries/SafeCast160.sol";
 import {MockPermitWithSmallDS, MockPermitWithLargerDS} from "./mocks/MockPermitWithDS.sol";
 import {MockNonPermitNonERC20WithDS} from "./mocks/MockNonPermitNonERC20WithDS.sol";
-import {SignatureVerification} from "../src/libraries/SignatureVerification.sol";
+import {SignatureVerification} from "../contracts/libraries/SignatureVerification.sol";
 import {MockFallbackERC20} from "./mocks/MockFallbackERC20.sol";
 
 contract Permit2LibTest is Test, PermitSignature, GasSnapshot {

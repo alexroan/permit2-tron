@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
 import {ERC20} from "solmate/src/tokens/ERC20.sol";
-import {Permit2Lib} from "../../src/libraries/Permit2Lib.sol";
+import {Permit2Lib} from "../../contracts/libraries/Permit2Lib.sol";
 
 contract MockPermit2Lib {
     /// @dev The address for the WETH9 contract on Ethereum mainnet, encoded as a bytes32.

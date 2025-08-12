@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import {ISignatureTransfer} from "../../src/interfaces/ISignatureTransfer.sol";
-import {PermitHash} from "../../src/libraries/PermitHash.sol";
+import {ISignatureTransfer} from "../../contracts/interfaces/ISignatureTransfer.sol";
+import {PermitHash} from "../../contracts/libraries/PermitHash.sol";
 
 contract MockHash {
     using PermitHash for ISignatureTransfer.PermitTransferFrom;

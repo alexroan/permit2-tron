@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import {Test} from "forge-std/Test.sol";
-import {SafeERC20, IERC20, IERC20Permit} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import {SignatureVerification} from "../src/libraries/SignatureVerification.sol";
+import {Test} from "forge-std/src/Test.sol";
+import {SafeERC20, IERC20, IERC20Permit} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {SignatureVerification} from "../contracts/libraries/SignatureVerification.sol";
 import {TokenProvider} from "./utils/TokenProvider.sol";
-import {SignatureVerification} from "../src/libraries/SignatureVerification.sol";
+import {SignatureVerification} from "../contracts/libraries/SignatureVerification.sol";
 import {PermitSignature} from "./utils/PermitSignature.sol";
 import {AddressBuilder} from "./utils/AddressBuilder.sol";
 import {AmountBuilder} from "./utils/AmountBuilder.sol";
 import {StructBuilder} from "./utils/StructBuilder.sol";
-import {Permit2} from "../src/Permit2.sol";
-import {SignatureTransfer} from "../src/SignatureTransfer.sol";
+import {Permit2} from "../contracts/Permit2.sol";
+import {SignatureTransfer} from "../contracts/SignatureTransfer.sol";
 import {GasSnapshot} from "forge-gas-snapshot/GasSnapshot.sol";
-import {ISignatureTransfer} from "../src/interfaces/ISignatureTransfer.sol";
-import {InvalidNonce, SignatureExpired} from "../src/PermitErrors.sol";
+import {ISignatureTransfer} from "../contracts/interfaces/ISignatureTransfer.sol";
+import {InvalidNonce, SignatureExpired} from "../contracts/PermitErrors.sol";
 
 contract SignatureTransferTest is Test, PermitSignature, TokenProvider, GasSnapshot {
     using AddressBuilder for address[];

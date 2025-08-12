@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import {Test} from "forge-std/Test.sol";
+import {Test} from "forge-std/src/Test.sol";
 import {MockPermit2} from "./mocks/MockPermit2.sol";
 import {TokenProvider} from "./utils/TokenProvider.sol";
-import {Allowance} from "../src/libraries/Allowance.sol";
+import {Allowance} from "../contracts/libraries/Allowance.sol";
 
 contract AllowanceUnitTest is Test, TokenProvider {
     MockPermit2 permit2;

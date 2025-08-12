@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import {Test} from "forge-std/Test.sol";
+import {Test} from "forge-std/src/Test.sol";
 import {PermitSignature} from "./utils/PermitSignature.sol";
-import {PermitHash} from "../src/libraries/PermitHash.sol";
-import {IAllowanceTransfer} from "../src/interfaces/IAllowanceTransfer.sol";
-import {ISignatureTransfer} from "../src/interfaces/ISignatureTransfer.sol";
+import {PermitHash} from "../contracts/libraries/PermitHash.sol";
+import {IAllowanceTransfer} from "../contracts/interfaces/IAllowanceTransfer.sol";
+import {ISignatureTransfer} from "../contracts/interfaces/ISignatureTransfer.sol";
 import {MockSignatureVerification} from "./mocks/MockSignatureVerification.sol";
 import {MockHash} from "./mocks/MockHash.sol";
 import {AddressBuilder} from "./utils/AddressBuilder.sol";
-import {SignatureVerification} from "../src/libraries/SignatureVerification.sol";
+import {SignatureVerification} from "../contracts/libraries/SignatureVerification.sol";
 
 contract TypehashGeneration is Test, PermitSignature {
     using PermitHash for *;

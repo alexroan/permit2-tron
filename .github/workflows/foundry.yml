@@ -70,6 +70,9 @@ jobs:
       - name: Test contracts
         run: make test-foundry
         id: test
+
+      - name: Integration tests
+        run: forge test
         env:
-          ETH_MAINNET_RPC: ${{ secrets.ETH_MAINNET_RPC }} 
-          PERMIT2_ADDRESS: ${{ vars.PERMIT2_ADDRESS }}
+          FOUNDRY_PROFILE: integration
+          FORK_URL: ${{ secrets.FORK_URL }}

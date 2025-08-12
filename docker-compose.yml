@@ -1,7 +1,7 @@
 services:
   tron-local:
-    # image: herryxcodes/blockchain-nodes-x86:latest
-    image: tronbox/tre:latest
+    image: herryxcodes/blockchain-nodes-x86:latest
+    # image: tronbox/tre:latest
     container_name: tron-local-node
     environment:
       - useDefaultPrivateKey=true

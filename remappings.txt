@@ -1,0 +1,5 @@
+solmate/=node_modules/solmate/
+tronbox/=node_modules/tronbox/
+@openzeppelin/=node_modules/@openzeppelin/
+forge-gas-snapshot/=lib/forge-gas-snapshot/src/
+forge-std/=lib/forge-std/src/

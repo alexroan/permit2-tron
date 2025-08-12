@@ -38,11 +38,19 @@ Handles all signature-based transfers where permissions only last for the durati
 ### AllowanceTransfer  
 Manages persistent allowances with amounts and expiration times.
 
+## Prerequisites
+
+- Node.js v20 (use `nvm use 20` or check `.nvmrc`)
+- pnpm v10.12.1  
+- Docker (for local TRON node)
+- Foundry (for Foundry tests)
+
 ## Installation
 
 ```bash
-npm install tronbox -g
-npm install
+# Install dependencies
+make install-tronbox  # Installs npm dependencies
+make install-foundry  # Installs Foundry dependencies
 ```
 
 ## Setup
@@ -61,10 +69,20 @@ export PRIVATE_KEY_NILE=your_nile_private_key
 
 ## Compilation
 
+This project supports compilation with both Tronbox and Foundry:
+
+### Tronbox Compilation
 ```bash
-pnpm build
-# or
-tronbox compile
+make build-tronbox
+# or directly:
+pnpm run compile
+```
+
+### Foundry Compilation
+```bash
+make build-foundry
+# or directly:
+forge build --sizes
 ```
 
 ## Deployment
@@ -95,18 +113,52 @@ source .env && tronbox migrate --network mainnet
 
 ## Testing
 
-Run the test suite:
+This project includes comprehensive test suites for both Tronbox (TVM) and Foundry:
+
+### Tronbox Tests (TVM)
+
+Run the full TVM test suite with local TRON node:
 ```bash
-pnpm test
-# or
-tronbox test
+make test-tronbox
 ```
 
-The tests demonstrate:
+This command will:
+1. Start a local TRON node
+2. Deploy contracts  
+3. Run tests
+4. Stop the node
+
+For individual steps:
+```bash
+make tron-node-up        # Start local TRON node
+make migrate-tronbox     # Deploy contracts
+pnpm run test:tronbox    # Run tests only
+make tron-node-down      # Stop node
+```
+
+The Tronbox tests demonstrate:
 - Basic permitTransferFrom functionality with TIP-712 signatures
 - Signature validation and spender authorization
 - Error cases (expired deadlines, wrong spenders)
 - Transfer to different recipients
+
+### Foundry Tests
+
+Run the Foundry test suite:
+```bash
+make test-foundry
+```
+
+Or manually:
+```bash
+forge test -vvv
+```
+
+The Foundry tests provide:
+- Comprehensive unit tests for all contract functionality
+- Fuzz testing with 10,000 runs per test
+- Gas optimization snapshots
+- Invariant testing for critical properties
 
 ## Integration Guide
 
@@ -206,18 +258,42 @@ The contracts use viaIR compilation with high optimization runs (1,000,000) for 
 
 ## Development
 
-### Requirements
-- Node.js >= 20
-- TronBox 
-- pnpm (recommended) or npm
+### Dual Testing Framework
+
+This project uses both Tronbox and Foundry for comprehensive testing:
+
+- **Tronbox**: Used for TVM-specific testing with actual TRON node interaction
+- **Foundry**: Provides fast unit tests, fuzz testing, and gas optimization
+
+Both test suites are run automatically in CI on every push and pull request.
+
+### Key Commands
+
+| Command | Description |
+|---------|-------------|
+| `make test-tronbox` | Run full TVM test suite |
+| `make test-foundry` | Run Foundry test suite |
+| `make tron-node-up` | Start local TRON node |
+| `make tron-node-down` | Stop local TRON node |
+| `make build-tronbox` | Compile with Tronbox |
+| `make build-foundry` | Compile with Foundry |
+| `make install-tronbox` | Install npm dependencies |
+| `make install-foundry` | Install Foundry dependencies |
 
 ### Project Structure
 ```
-permit2-tron-tronbox/
+permit2-tron/
 ├── contracts/         # Solidity contracts
-├── migrations/        # Deployment scripts
-├── test/             # Test files
-├── build/            # Compiled contracts
+├── migrations/        # Tronbox deployment scripts
+├── test/             # Tronbox test files
+├── foundry_tests/    # Foundry test files
+├── lib/              # Foundry dependencies
+├── scripts/          # Utility scripts
+├── build/            # Tronbox compiled contracts
+├── out/              # Foundry compiled contracts
+├── cache/            # Foundry cache
+├── Makefile          # Build and test commands
+├── foundry.toml      # Foundry configuration
 └── tronbox-config.js # TronBox configuration
 ```
 

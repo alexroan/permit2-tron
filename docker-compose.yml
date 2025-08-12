@@ -1,0 +1,20 @@
+services:
+  tron-local:
+    image: herryxcodes/blockchain-nodes-x86:latest
+    # image: tronbox/tre:latest
+    container_name: tron-local-node
+    environment:
+      - useDefaultPrivateKey=true
+    ports:
+      - "9095:9090"  # HTTP/RPC port (changed from 9090 to 9095 to avoid Prometheus conflict)
+      - "50061:50051"  # gRPC port (changed from 50051 to 50061 to avoid payment-gw conflict)
+      - "50062:50052"  # gRPC port (SolidityNode) (changed from 50052 to 50062)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/wallet/getnowblock"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    profiles:
+      - tron
+      - full

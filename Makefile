@@ -45,8 +45,12 @@ test-tronbox: install-tronbox build-tronbox
 
 install-foundry:
 	@echo "Installing foundry..."
-	@forge install
-	@echo "Foundry installed successfully"
+	@if [ ! -d "lib/forge-std/src" ]; then \
+		forge install; \
+	else \
+		echo "Submodules already present, skipping forge install"; \
+	fi
+	@echo "Foundry dependencies ready"
 
 build-foundry:
 	@echo "Building foundry..."

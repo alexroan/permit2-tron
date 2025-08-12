@@ -67,6 +67,14 @@ jobs:
           forge fmt --check
         id: fmt
 
+      - name: Verify submodules
+        run: |
+          echo "Checking submodule status..."
+          git submodule status
+          echo "Checking lib/solmate contents..."
+          ls -la lib/solmate/
+          ls -la lib/solmate/src/tokens/ || echo "tokens directory not found"
+
       - name: Test contracts
         run: make test-foundry
         id: test

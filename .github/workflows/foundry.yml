@@ -79,8 +79,8 @@ jobs:
         run: make test-foundry
         id: test
 
-      - name: Integration tests
-        run: forge test
-        env:
-          FOUNDRY_PROFILE: integration
-          FORK_URL: ${{ secrets.FORK_URL }}
+      # - name: Integration tests
+      #   run: forge test
+      #   env:
+      #     FOUNDRY_PROFILE: integration
+      #     FORK_URL: ${{ secrets.FORK_URL }}

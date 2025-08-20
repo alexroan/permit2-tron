@@ -33,9 +33,9 @@ contract TIP712 is ITIP712 {
 
     /// @notice Builds a domain separator using the current chainId and contract address.
     function _buildDomainSeparator(bytes32 typeHash, bytes32 nameHash) private view returns (bytes32) {
-        // TIP-712: Use masked chainId and encode address as uint160
+        // TIP-712: Use masked chainId
         uint256 chainId = block.chainid & 0xffffffff;
-        return keccak256(abi.encode(typeHash, nameHash, chainId, uint160(address(this))));
+        return keccak256(abi.encode(typeHash, nameHash, chainId, address(this)));
     }
 
     /// @notice Creates an EIP-712 typed data hash

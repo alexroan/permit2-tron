@@ -1,7 +1,7 @@
-diff --git a/permit2/src/AllowanceTransfer.sol b/permit2-tron/contracts/AllowanceTransfer.sol
+diff --git permit2/src/AllowanceTransfer.sol permit2-tron/contracts/AllowanceTransfer.sol
 index 56c4cce..78f17a4 100644
---- a/permit2/src/AllowanceTransfer.sol
-+++ b/permit2-tron/contracts/AllowanceTransfer.sol
+--- permit2/src/AllowanceTransfer.sol
++++ permit2-tron/contracts/AllowanceTransfer.sol
 @@ -1,16 +1,16 @@
  // SPDX-License-Identifier: MIT
 -pragma solidity 0.8.17;
@@ -22,11 +22,11 @@ index 56c4cce..78f17a4 100644
      using SignatureVerification for bytes;
      using SafeTransferLib for ERC20;
      using PermitHash for PermitSingle;
-diff --git a/permit2-tron/contracts/Migrations.sol b/permit2-tron/contracts/Migrations.sol
+diff --git permit2-tron/contracts/Migrations.sol permit2-tron/contracts/Migrations.sol
 new file mode 100644
 index 0000000..87d493b
 --- /dev/null
-+++ b/permit2-tron/contracts/Migrations.sol
++++ permit2-tron/contracts/Migrations.sol
 @@ -0,0 +1,16 @@
 +// SPDX-License-Identifier: MIT
 +pragma solidity >=0.4.22 <0.9.0;
@@ -44,10 +44,10 @@ index 0000000..87d493b
 +        last_completed_migration = completed;
 +    }
 +}
-diff --git a/permit2/src/Permit2.sol b/permit2-tron/contracts/Permit2.sol
+diff --git permit2/src/Permit2.sol permit2-tron/contracts/Permit2.sol
 index 7249e40..cdbcf52 100644
---- a/permit2/src/Permit2.sol
-+++ b/permit2-tron/contracts/Permit2.sol
+--- permit2/src/Permit2.sol
++++ permit2-tron/contracts/Permit2.sol
 @@ -1,5 +1,5 @@
  // SPDX-License-Identifier: MIT
 -pragma solidity 0.8.17;
@@ -55,10 +55,10 @@ index 7249e40..cdbcf52 100644
  
  import {SignatureTransfer} from "./SignatureTransfer.sol";
  import {AllowanceTransfer} from "./AllowanceTransfer.sol";
-diff --git a/permit2/src/PermitErrors.sol b/permit2-tron/contracts/PermitErrors.sol
+diff --git permit2/src/PermitErrors.sol permit2-tron/contracts/PermitErrors.sol
 index 2c42e2d..5038e74 100644
---- a/permit2/src/PermitErrors.sol
-+++ b/permit2-tron/contracts/PermitErrors.sol
+--- permit2/src/PermitErrors.sol
++++ permit2-tron/contracts/PermitErrors.sol
 @@ -1,5 +1,5 @@
  // SPDX-License-Identifier: MIT
 -pragma solidity 0.8.17;
@@ -66,10 +66,10 @@ index 2c42e2d..5038e74 100644
  
  /// @notice Shared errors between signature based transfers and allowance based transfers.
  
-diff --git a/permit2/src/SignatureTransfer.sol b/permit2-tron/contracts/SignatureTransfer.sol
+diff --git permit2/src/SignatureTransfer.sol permit2-tron/contracts/SignatureTransfer.sol
 index c026553..feec4de 100644
---- a/permit2/src/SignatureTransfer.sol
-+++ b/permit2-tron/contracts/SignatureTransfer.sol
+--- permit2/src/SignatureTransfer.sol
++++ permit2-tron/contracts/SignatureTransfer.sol
 @@ -1,5 +1,5 @@
  // SPDX-License-Identifier: MIT
 -pragma solidity 0.8.17;
@@ -89,13 +89,13 @@ index c026553..feec4de 100644
      using SignatureVerification for bytes;
      using SafeTransferLib for ERC20;
      using PermitHash for PermitTransferFrom;
-diff --git a/permit2/src/EIP712.sol b/permit2-tron/contracts/TIP712.sol
-similarity index 74%
+diff --git permit2/src/EIP712.sol permit2-tron/contracts/TIP712.sol
+similarity index 75%
 rename from permit2/src/EIP712.sol
 rename to permit2-tron/contracts/TIP712.sol
-index 971a03d..5faa5d5 100644
---- a/permit2/src/EIP712.sol
-+++ b/permit2-tron/contracts/TIP712.sol
+index 971a03d..7d715d5 100644
+--- permit2/src/EIP712.sol
++++ permit2-tron/contracts/TIP712.sol
 @@ -1,12 +1,12 @@
  // SPDX-License-Identifier: MIT
 -pragma solidity 0.8.17;
@@ -136,16 +136,16 @@ index 971a03d..5faa5d5 100644
      /// @notice Builds a domain separator using the current chainId and contract address.
      function _buildDomainSeparator(bytes32 typeHash, bytes32 nameHash) private view returns (bytes32) {
 -        return keccak256(abi.encode(typeHash, nameHash, block.chainid, address(this)));
-+        // TIP-712: Use masked chainId and encode address as uint160
++        // TIP-712: Use masked chainId
 +        uint256 chainId = block.chainid & 0xffffffff;
-+        return keccak256(abi.encode(typeHash, nameHash, chainId, uint160(address(this))));
++        return keccak256(abi.encode(typeHash, nameHash, chainId, address(this)));
      }
  
      /// @notice Creates an EIP-712 typed data hash
-diff --git a/permit2/src/interfaces/IAllowanceTransfer.sol b/permit2-tron/contracts/interfaces/IAllowanceTransfer.sol
+diff --git permit2/src/interfaces/IAllowanceTransfer.sol permit2-tron/contracts/interfaces/IAllowanceTransfer.sol
 index 712aa9d..a926d93 100644
---- a/permit2/src/interfaces/IAllowanceTransfer.sol
-+++ b/permit2-tron/contracts/interfaces/IAllowanceTransfer.sol
+--- permit2/src/interfaces/IAllowanceTransfer.sol
++++ permit2-tron/contracts/interfaces/IAllowanceTransfer.sol
 @@ -1,12 +1,12 @@
  // SPDX-License-Identifier: MIT
  pragma solidity ^0.8.0;
@@ -161,10 +161,10 @@ index 712aa9d..a926d93 100644
      /// @notice Thrown when an allowance on a token has expired.
      /// @param deadline The timestamp at which the allowed amount is no longer valid
      error AllowanceExpired(uint256 deadline);
-diff --git a/permit2/src/interfaces/ISignatureTransfer.sol b/permit2-tron/contracts/interfaces/ISignatureTransfer.sol
+diff --git permit2/src/interfaces/ISignatureTransfer.sol permit2-tron/contracts/interfaces/ISignatureTransfer.sol
 index 63297c3..b62d2d6 100644
---- a/permit2/src/interfaces/ISignatureTransfer.sol
-+++ b/permit2-tron/contracts/interfaces/ISignatureTransfer.sol
+--- permit2/src/interfaces/ISignatureTransfer.sol
++++ permit2-tron/contracts/interfaces/ISignatureTransfer.sol
 @@ -1,12 +1,12 @@
  // SPDX-License-Identifier: MIT
  pragma solidity ^0.8.0;
@@ -180,11 +180,11 @@ index 63297c3..b62d2d6 100644
      /// @notice Thrown when the requested amount for a transfer is larger than the permissioned amount
      /// @param maxAmount The maximum amount a spender can request to transfer
      error InvalidAmount(uint256 maxAmount);
-diff --git a/permit2-tron/contracts/interfaces/ITIP712.sol b/permit2-tron/contracts/interfaces/ITIP712.sol
+diff --git permit2-tron/contracts/interfaces/ITIP712.sol permit2-tron/contracts/interfaces/ITIP712.sol
 new file mode 100644
 index 0000000..5ac7bff
 --- /dev/null
-+++ b/permit2-tron/contracts/interfaces/ITIP712.sol
++++ permit2-tron/contracts/interfaces/ITIP712.sol
 @@ -0,0 +1,6 @@
 +// SPDX-License-Identifier: MIT
 +pragma solidity ^0.8.0;
@@ -192,10 +192,10 @@ index 0000000..5ac7bff
 +interface ITIP712 {
 +    function DOMAIN_SEPARATOR() external view returns (bytes32);
 +}
-diff --git a/permit2/src/libraries/Allowance.sol b/permit2-tron/contracts/libraries/Allowance.sol
+diff --git permit2/src/libraries/Allowance.sol permit2-tron/contracts/libraries/Allowance.sol
 index 671c972..269f42e 100644
---- a/permit2/src/libraries/Allowance.sol
-+++ b/permit2-tron/contracts/libraries/Allowance.sol
+--- permit2/src/libraries/Allowance.sol
++++ permit2-tron/contracts/libraries/Allowance.sol
 @@ -1,5 +1,5 @@
  // SPDX-License-Identifier: MIT
 -pragma solidity ^0.8.17;
@@ -203,10 +203,10 @@ index 671c972..269f42e 100644
  
  import {IAllowanceTransfer} from "../interfaces/IAllowanceTransfer.sol";
  
-diff --git a/permit2/src/libraries/Permit2Lib.sol b/permit2-tron/contracts/libraries/Permit2Lib.sol
+diff --git permit2/src/libraries/Permit2Lib.sol permit2-tron/contracts/libraries/Permit2Lib.sol
 index 0780d7c..6c25e43 100644
---- a/permit2/src/libraries/Permit2Lib.sol
-+++ b/permit2-tron/contracts/libraries/Permit2Lib.sol
+--- permit2/src/libraries/Permit2Lib.sol
++++ permit2-tron/contracts/libraries/Permit2Lib.sol
 @@ -1,8 +1,7 @@
  // SPDX-License-Identifier: MIT
 -pragma solidity ^0.8.17;
@@ -217,10 +217,10 @@ index 0780d7c..6c25e43 100644
  import {IDAIPermit} from "../interfaces/IDAIPermit.sol";
  import {IAllowanceTransfer} from "../interfaces/IAllowanceTransfer.sol";
  import {SafeCast160} from "./SafeCast160.sol";
-diff --git a/permit2/src/libraries/PermitHash.sol b/permit2-tron/contracts/libraries/PermitHash.sol
-index 32d4a83..8689d3c 100644
---- a/permit2/src/libraries/PermitHash.sol
-+++ b/permit2-tron/contracts/libraries/PermitHash.sol
+diff --git permit2/src/libraries/PermitHash.sol permit2-tron/contracts/libraries/PermitHash.sol
+index 32d4a83..e343247 100644
+--- permit2/src/libraries/PermitHash.sol
++++ permit2-tron/contracts/libraries/PermitHash.sol
 @@ -1,5 +1,5 @@
  // SPDX-License-Identifier: MIT
 -pragma solidity ^0.8.17;
@@ -228,94 +228,29 @@ index 32d4a83..8689d3c 100644
  
  import {IAllowanceTransfer} from "../interfaces/IAllowanceTransfer.sol";
  import {ISignatureTransfer} from "../interfaces/ISignatureTransfer.sol";
-@@ -36,8 +36,9 @@ library PermitHash {
- 
-     function hash(IAllowanceTransfer.PermitSingle memory permitSingle) internal pure returns (bytes32) {
-         bytes32 permitHash = _hashPermitDetails(permitSingle.details);
--        return
--            keccak256(abi.encode(_PERMIT_SINGLE_TYPEHASH, permitHash, permitSingle.spender, permitSingle.sigDeadline));
-+        return keccak256(
-+            abi.encode(_PERMIT_SINGLE_TYPEHASH, permitHash, uint160(permitSingle.spender), permitSingle.sigDeadline)
-+        );
-     }
- 
-     function hash(IAllowanceTransfer.PermitBatch memory permitBatch) internal pure returns (bytes32) {
-@@ -50,7 +51,7 @@ library PermitHash {
-             abi.encode(
-                 _PERMIT_BATCH_TYPEHASH,
-                 keccak256(abi.encodePacked(permitHashes)),
--                permitBatch.spender,
-+                uint160(permitBatch.spender),
-                 permitBatch.sigDeadline
-             )
-         );
-@@ -59,7 +60,9 @@ library PermitHash {
-     function hash(ISignatureTransfer.PermitTransferFrom memory permit) internal view returns (bytes32) {
-         bytes32 tokenPermissionsHash = _hashTokenPermissions(permit.permitted);
-         return keccak256(
--            abi.encode(_PERMIT_TRANSFER_FROM_TYPEHASH, tokenPermissionsHash, msg.sender, permit.nonce, permit.deadline)
-+            abi.encode(
-+                _PERMIT_TRANSFER_FROM_TYPEHASH, tokenPermissionsHash, uint160(msg.sender), permit.nonce, permit.deadline
-+            )
-         );
-     }
- 
-@@ -75,7 +78,7 @@ library PermitHash {
-             abi.encode(
-                 _PERMIT_BATCH_TRANSFER_FROM_TYPEHASH,
-                 keccak256(abi.encodePacked(tokenPermissionHashes)),
--                msg.sender,
-+                uint160(msg.sender),
-                 permit.nonce,
-                 permit.deadline
-             )
-@@ -90,7 +93,9 @@ library PermitHash {
-         bytes32 typeHash = keccak256(abi.encodePacked(_PERMIT_TRANSFER_FROM_WITNESS_TYPEHASH_STUB, witnessTypeString));
- 
-         bytes32 tokenPermissionsHash = _hashTokenPermissions(permit.permitted);
--        return keccak256(abi.encode(typeHash, tokenPermissionsHash, msg.sender, permit.nonce, permit.deadline, witness));
-+        return keccak256(
-+            abi.encode(typeHash, tokenPermissionsHash, uint160(msg.sender), permit.nonce, permit.deadline, witness)
-+        );
-     }
- 
-     function hashWithWitness(
-@@ -112,7 +117,7 @@ library PermitHash {
-             abi.encode(
-                 typeHash,
-                 keccak256(abi.encodePacked(tokenPermissionHashes)),
--                msg.sender,
-+                uint160(msg.sender),
-                 permit.nonce,
-                 permit.deadline,
-                 witness
-@@ -121,7 +126,12 @@ library PermitHash {
+@@ -121,7 +121,9 @@ library PermitHash {
      }
  
      function _hashPermitDetails(IAllowanceTransfer.PermitDetails memory details) private pure returns (bytes32) {
 -        return keccak256(abi.encode(_PERMIT_DETAILS_TYPEHASH, details));
-+        // TIP-712: encode address as uint160
 +        return keccak256(
-+            abi.encode(
-+                _PERMIT_DETAILS_TYPEHASH, uint160(details.token), details.amount, details.expiration, details.nonce
-+            )
++            abi.encode(_PERMIT_DETAILS_TYPEHASH, details.token, details.amount, details.expiration, details.nonce)
 +        );
      }
  
      function _hashTokenPermissions(ISignatureTransfer.TokenPermissions memory permitted)
-@@ -129,6 +139,7 @@ library PermitHash {
+@@ -129,6 +131,6 @@ library PermitHash {
          pure
          returns (bytes32)
      {
 -        return keccak256(abi.encode(_TOKEN_PERMISSIONS_TYPEHASH, permitted));
-+        // TIP-712: encode address as uint160
-+        return keccak256(abi.encode(_TOKEN_PERMISSIONS_TYPEHASH, uint160(permitted.token), permitted.amount));
++        return keccak256(abi.encode(_TOKEN_PERMISSIONS_TYPEHASH, permitted.token, permitted.amount));
      }
  }
-diff --git a/permit2/src/libraries/SafeCast160.sol b/permit2-tron/contracts/libraries/SafeCast160.sol
+diff --git permit2/src/libraries/SafeCast160.sol permit2-tron/contracts/libraries/SafeCast160.sol
 index 5926036..f07401e 100644
---- a/permit2/src/libraries/SafeCast160.sol
-+++ b/permit2-tron/contracts/libraries/SafeCast160.sol
+--- permit2/src/libraries/SafeCast160.sol
++++ permit2-tron/contracts/libraries/SafeCast160.sol
 @@ -1,5 +1,5 @@
  // SPDX-License-Identifier: MIT
 -pragma solidity ^0.8.17;
@@ -323,10 +258,10 @@ index 5926036..f07401e 100644
  
  library SafeCast160 {
      /// @notice Thrown when a valude greater than type(uint160).max is cast to uint160
-diff --git a/permit2/src/libraries/SignatureVerification.sol b/permit2-tron/contracts/libraries/SignatureVerification.sol
+diff --git permit2/src/libraries/SignatureVerification.sol permit2-tron/contracts/libraries/SignatureVerification.sol
 index 904dfcd..e69de48 100644
---- a/permit2/src/libraries/SignatureVerification.sol
-+++ b/permit2-tron/contracts/libraries/SignatureVerification.sol
+--- permit2/src/libraries/SignatureVerification.sol
++++ permit2-tron/contracts/libraries/SignatureVerification.sol
 @@ -1,5 +1,5 @@
  // SPDX-License-Identifier: MIT
 -pragma solidity ^0.8.17;
@@ -334,11 +269,11 @@ index 904dfcd..e69de48 100644
  
  import {IERC1271} from "../interfaces/IERC1271.sol";
  
-diff --git a/permit2-tron/contracts/mocks/MockERC20.sol b/permit2-tron/contracts/mocks/MockERC20.sol
+diff --git permit2-tron/contracts/mocks/MockERC20.sol permit2-tron/contracts/mocks/MockERC20.sol
 new file mode 100644
 index 0000000..82fcfe4
 --- /dev/null
-+++ b/permit2-tron/contracts/mocks/MockERC20.sol
++++ permit2-tron/contracts/mocks/MockERC20.sol
 @@ -0,0 +1,12 @@
 +// SPDX-License-Identifier: MIT
 +pragma solidity 0.8.23;

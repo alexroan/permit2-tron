@@ -233,11 +233,10 @@ await permit2.permitTransferFrom(
 
 | Network | Address | Status |
 |---------|---------|--------|
-| Nile Testnet | `TGm3CvZSaRvi7iehvZj7utaKLcP6JwpynF` | 🧪 Experimental |
+| Nile Testnet | `TVvdqUmWbRBwTq5WrUBMoZepELspTt6iR6` | 🧪 Prerelease |
+| Shasta Testnet | `TPUqJPASUn1zLvbLBgRZ5pBYrx7WSe5ahp` | 🧪 Prerelease |
 
 **Important Notes:**
-- This is the first testnet deployment of Permit2 on Tron
-- The contract is under active development and testing
 - Do NOT use for production applications or real value transfers
 - Contract may be redeployed with breaking changes
 

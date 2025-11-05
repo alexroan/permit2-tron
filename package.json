@@ -9,7 +9,8 @@
     "migrate:shasta": "source .env && tronbox migrate --network shasta",
     "migrate:nile": "source .env && tronbox migrate --network nile",
     "migrate:mainnet": "source .env && tronbox migrate --network mainnet",
-    "clean": "rm -rf build"
+    "clean": "rm -rf build",
+    "verify": "node scripts/verify-contract.js"
   },
   "keywords": [
     "permit2",

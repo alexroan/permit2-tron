@@ -25,7 +25,7 @@ This implementation has been adapted for Tron's blockchain with the following ke
 
 ### Compilation
 - Built with TronBox instead of Foundry
-- Requires Solidity 0.8.18
+- Requires Solidity 0.8.23
 - Uses viaIR optimization like the original
 
 ## Architecture
@@ -242,7 +242,84 @@ await permit2.permitTransferFrom(
 
 ### Mainnet Deployment
 
-No mainnet deployment yet. Thorough testing on testnet is required before mainnet deployment.
+| Network | Address | Status |
+|---------|---------|--------|
+| Mainnet | `TJhMXTHQHeQyMD7TcKQFqAePNgG4b31H9m` | ✅ Released |
+
+**Verification**: The contract bytecode can be verified using the provided verification script (see Contract Verification section below).
+
+## Contract Verification
+
+### Why Tronscan Verification Isn't Available
+
+This contract uses advanced Solidity compiler settings that Tronscan's web-based verification tool does not support:
+
+- **Via IR Compilation** (`viaIR: true`): Uses Solidity's Intermediate Representation pipeline, which produces different bytecode than the legacy compilation pipeline
+- **Custom Bytecode Metadata** (`bytecodeHash: 'none'`): Removes metadata hash from bytecode
+- **High Optimization Runs** (1,000,000): Extremely high optimization setting
+
+Tronscan's verification interface only supports standard compilation settings and does not provide options for these advanced flags. Therefore, we provide an independent verification tool that you can run yourself.
+
+### Verifying the Contract
+
+You can verify that the source code in this repository matches the deployed contract on Tron Mainnet using the provided verification script.
+
+#### Quick Verification
+
+```bash
+# Using pnpm
+pnpm run verify
+
+# Using make
+make verify
+```
+
+#### What the Script Does
+
+The verification script (`scripts/verify-contract.js`) performs the following steps:
+
+1. **Cleans build artifacts** - Removes any existing compiled contracts
+2. **Compiles the contract** - Uses TronBox with the exact same settings as deployment:
+   - Solidity 0.8.23
+   - Optimizer enabled: 1,000,000 runs
+   - Via IR: true
+   - Bytecode hash: none
+3. **Fetches on-chain bytecode** - Retrieves the deployment bytecode from Tron Mainnet for address `TJhMXTHQHeQyMD7TcKQFqAePNgG4b31H9m`
+4. **Compares bytecodes** - Performs byte-by-byte comparison of compiled vs on-chain deployment bytecode
+
+#### Prerequisites
+
+- Node.js v20 or higher
+- pnpm installed
+- Internet connection (to fetch on-chain bytecode)
+- Dependencies installed (`pnpm install`)
+
+#### Verification Output
+
+When verification succeeds, you'll see:
+
+```
+✅ VERIFICATION SUCCESSFUL
+The compiled bytecode matches the on-chain bytecode.
+This confirms that the source code in this repository
+matches the contract deployed on Tron Mainnet.
+```
+
+If verification fails, the script will:
+- Report the mismatch
+- Show bytecode length differences
+- Indicate the first position where bytes differ
+- Suggest possible reasons for the failure
+
+#### For Auditors and Advanced Users
+
+The verification script source code is available at `scripts/verify-contract.js` for inspection. You can review the implementation to understand exactly how the verification is performed. The script uses:
+
+- TronWeb library to fetch contract data from Tron Mainnet
+- Standard Node.js APIs for file operations and process execution
+- Simple string comparison for bytecode matching
+
+This approach provides transparency and allows anyone to independently verify the contract without relying on third-party verification services.
 
 ## Security Considerations
 
@@ -278,6 +355,7 @@ Both test suites are run automatically in CI on every push and pull request.
 | `make build-foundry` | Compile with Foundry |
 | `make install-tronbox` | Install npm dependencies |
 | `make install-foundry` | Install Foundry dependencies |
+| `make verify` | Verify contract bytecode matches on-chain deployment |
 
 ### Project Structure
 ```

@@ -1,4 +1,4 @@
-.PHONY: install-tronbox build-tronbox tron-node-up tron-node-down migrate-tronbox test-tronbox install-foundry build-foundry test-foundry
+.PHONY: install-tronbox build-tronbox tron-node-up tron-node-down migrate-tronbox test-tronbox install-foundry build-foundry test-foundry verify
 
 # start local TRON node using docker
 tron-node-up:
@@ -61,3 +61,8 @@ test-foundry: install-foundry build-foundry
 	@echo "Running foundry tests..."
 	@forge test -vvv
 	@echo "Foundry tests completed"
+
+# verify contract bytecode matches on-chain deployment
+verify:
+	@echo "Verifying Permit2 contract on Tron Mainnet..."
+	@node scripts/verify-contract.js
